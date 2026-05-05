@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Skill(update-config)",
+      "Skill(qmd:qmd)",
+      "Bash(mv sources *)",
+      "Bash(mkdir -p raw/assets)",
+      "Bash(mkdir -p wiki/concepts wiki/entities wiki/sources wiki/comparisons)",
+      "Bash(mv index.md wiki/)",
+      "Bash(mv log.md wiki/)"
+    ]
+  }
+}
