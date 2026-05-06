@@ -150,6 +150,57 @@ QMD 是本 Wiki 的主要检索引擎，部署为 MCP 服务器（`qmd:qmd` skil
 - **索引管理**：`.qmd/` 目录存储索引缓存，由 QMD 自动管理
 - **降级策略**：QMD 不可用时降级为 Glob + Grep 手动遍历
 
+## raw/ 领域扩展规则
+
+当需要向 `raw/` 新增领域或子领域时，遵循以下规则。
+
+### 治理模型
+
+| 角色 | 职责 |
+|------|------|
+| **人类** | 创建 raw/ 目录（权威来源）；决定领域边界；审查 LLM 提案；保持 CLAUDE.md 目录树同步 |
+| **LLM** | 读取 CLAUDE.md 了解当前领域树；在 `/refine` 时提名新领域需求；在 `/lint` 时标记领域结构问题；**绝不单方面创建 raw/ 目录** |
+
+### 命名规范
+
+- **kebab-case**，小写 ASCII，无空格、无 Unicode
+- **已确立的技术术语优先**：用 `shaders` 而非 `gpu-programs`
+- **复数**用于同质对象集合：`algorithms`、`patterns`、`tools`、`languages`
+- **单数**用于学科和研究领域：`physics`、`rendering`、`networking`、`optimization`
+- **无缩写**，除非是行业通用标准：`ai`、`ui`、`ide` 允许，但 `bd`、`pm` 不允许
+- 新增领域时在 CLAUDE.md 目录树注释中附中文翻译
+
+### 深度限制
+
+- **最大深度 2 层**：`raw/<domain>/<subdomain>/`
+- 不允许第三层嵌套（如 `raw/gamedev/rendering/shaders/`）
+- 若子领域增长到需要拆分，将其提升为顶级子领域（如 `raw/gamedev/shaders/`）
+
+### 创建标准
+
+| 条件 | 阈值 |
+|------|------|
+| 源文件数量 | 至少已有或预计 3+ 个源文件属于该领域 |
+| 正交性 | 与现有领域主题重叠不超过约 30% |
+| 抽象层级 | 不低于"一个具体技术"（如 `rendering/` 可以，`water-rendering/` 不行） |
+| 时效性 | 非临时性，不是一次性项目转储 |
+
+**反模式（不应创建）：**
+- `raw/tools/vscode-extensions/` — 过于具体，归入 `raw/tools/ide/`
+- `raw/gamedev/water-rendering/` — 过于狭窄，归入 `raw/gamedev/rendering/`
+- `raw/gamedev/URP/` — 特定技术而非领域，归入 `raw/gamedev/rendering/`
+- `raw/cs/leetcode/` — 非 CS 子领域，归入 `raw/cs/algorithms/`
+
+### 晋升路径
+
+当某个现有子领域的源文件超过约 15 个时，可将子主题提升为独立子领域。例如：`raw/gamedev/rendering/` 中 Shader 相关内容积累到 15+ 个文件时，可创建 `raw/gamedev/shaders/`。
+
+### CLAUDE.md 同步
+
+- 人类创建新领域时，必须同步更新 CLAUDE.md 的目录树
+- `/lint` 会检测磁盘实际目录与 CLAUDE.md 声明之间的不匹配
+- 不匹配将作为 lint 报告的警告项
+
 ## 设计原则
 
 1. **raw/ 不可变** — LLM 绝不修改 raw/ 中的任何文件，来源完整性是 Wiki 可信度的基石
