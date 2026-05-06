@@ -8,7 +8,9 @@
       "Bash(mkdir -p wiki/concepts wiki/entities wiki/sources wiki/comparisons)",
       "Bash(mv index.md wiki/)",
       "Bash(mv log.md wiki/)",
-      "WebFetch(domain:github.com)"
+      "WebFetch(domain:github.com)",
+      "WebSearch",
+      "Bash(git *)"
     ]
   },
   "skipWebFetchPreflight": true

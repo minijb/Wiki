@@ -129,14 +129,16 @@ aliases: [别名1, 别名2]
 
 ## Skill 入口
 
-四个核心操作通过 `.claude/skills/` 定义，以 `/` 命令调用：
+核心操作通过 `.claude/skills/` 定义，以 `/` 命令调用：
 
 | 命令 | Skill 文件 | 职责 |
 |------|-----------|------|
-| `/ingest` | `.claude/skills/ingest.md` | 阅读 raw/ 来源 → 讨论 → 写摘要 → 更新 wiki/ → 更新 index.md + log.md |
-| `/query` | `.claude/skills/query.md` | 读 index.md 定位 → QMD 检索 → 阅读综合 → 生成答案 |
-| `/lint` | `.claude/skills/lint.md` | QMD 全局扫描 → 孤页/断链/矛盾/陈旧/缺口 → 生成报告 |
-| `/refine` | `.claude/skills/refine.md` | 读 drafts/ → 审查 → 讨论迭代 → 归档判定 |
+| `/ingest` | `.claude/skills/ingest/SKILL.md` | 阅读 raw/ 来源 → 讨论 → 写摘要 → 更新 wiki/ → 更新 index.md + log.md |
+| `/query` | `.claude/skills/query/SKILL.md` | 读 index.md 定位 → QMD 检索 → 阅读综合 → 生成答案 |
+| `/lint` | `.claude/skills/lint/SKILL.md` | QMD 全局扫描 → 孤页/断链/矛盾/陈旧/缺口 → 生成报告 |
+| `/refine` | `.claude/skills/refine/SKILL.md` | 读 drafts/ → 审查 → 讨论迭代 → 归档判定 |
+| `qmd` | `.claude/skills/qmd/SKILL.md` | QMD 搜索引擎 — BM25+向量语义搜索、文档获取、索引状态 |
+| `obsidian-md` | `.claude/skills/obsidian-md/SKILL.md` | 生成 Obsidian 风格 markdown（wikilink、callout、frontmatter） |
 
 ## QMD 搜索引擎
 
