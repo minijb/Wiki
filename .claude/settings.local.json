@@ -10,7 +10,11 @@
       "Bash(mv log.md wiki/)",
       "WebFetch(domain:github.com)",
       "WebSearch",
-      "Bash(git *)"
+      "Bash(git *)",
+      "Bash(mv \"D:/Wiki/drafts/00_Python_运行命令行.md\" \"D:/Wiki/drafts/Python-运行命令行.md\")",
+      "Bash(mv \"D:/Wiki/drafts/01_Python_文件的增删改查.md\" \"D:/Wiki/drafts/Python-文件操作.md\")",
+      "WebFetch(domain:www.npmjs.com)",
+      "WebFetch(domain:registry.npmjs.org)"
     ]
   },
   "skipWebFetchPreflight": true

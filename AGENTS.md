@@ -1,12 +1,15 @@
-# CLAUDE.md — Wiki Schema
+# AGENTS.md — Wiki Schema
 
-本文件定义 LLM Wiki 工作区的静态约定。Skills（`.claude/skills/`）承载行为，此文件承载数据结构与格式规范。
+本文件定义 LLM Wiki 工作区的静态约定。Skills（`.pi/skills/`）承载行为，此文件承载数据结构与格式规范。
+
+> 本文件同时兼容 pi 和 Claude Code。pi 读取 `AGENTS.md` 或 `CLAUDE.md`，skill 通过 `/skill:name` 调用。
 
 ## 目录结构
 
 ```
 wiki/                        # Wiki 知识库根目录
-├── CLAUDE.md                # 本文件 — Schema 层（LLM 只读，人类维护）
+├── AGENTS.md                # 本文件 — Schema 层（LLM 只读，人类维护）
+├── CLAUDE.md                # Claude Code 兼容版（内容与 AGENTS.md 同步）
 ├── raw/                     # 原始来源层（不可变：LLM 只读不写，人类策展）
 │   ├── assets/              # 本地图片、PDF 等附件
 │   ├── gamedev/             # 游戏开发实践综合
@@ -25,7 +28,6 @@ wiki/                        # Wiki 知识库根目录
 │   │   ├── architecture/    # SOLID, DDD, ECS, 软件架构
 │   │   └── algorithms/      # 算法与数据结构
 │   └── tools/               # 工具操作流程
-│       ├── ai-coding/        # AI 编码代理（PI Agent 扩展生态）
 │       ├── git/             # 版本控制
 │       ├── ide/             # Rider, VS, VS Code
 │       ├── docker/          # 容器化
@@ -39,11 +41,14 @@ wiki/                        # Wiki 知识库根目录
 │   ├── sources/             # 来源摘要 — 每篇 raw/ 来源对应一个摘要页面
 │   └── comparisons/         # 对比分析 — 跨来源的矛盾、对比、权衡
 ├── drafts/                  # 用户打磨区（不在 Karpathy 原生规范中，扩展）
-├── .claude/skills/          # Skill 定义目录
-│   ├── ingest.md            # /ingest — 摄取来源到 wiki
-│   ├── query.md             # /query — 查询 wiki
-│   ├── lint.md              # /lint  — wiki 健康检查
-│   └── refine.md            # /refine — 打磨 drafts/ 笔记
+├── .pi/skills/              # pi Skill 定义目录
+│   ├── ingest/              # /skill:ingest — 摄取来源到 wiki
+│   ├── query/               # /skill:query — 查询 wiki
+│   ├── lint/                # /skill:lint  — wiki 健康检查
+│   ├── refine/              # /skill:refine — 打磨 drafts/ 笔记
+│   ├── qmd/                 # QMD 搜索引擎
+│   └── obsidian-md/         # Obsidian Markdown 生成器
+├── .claude/skills/          # Claude Code Skill 定义目录（与 .pi/skills/ 保持同步）
 ├── .qmd/                    # QMD 搜索引擎索引缓存（自动管理）
 └── PLAN.md                  # 初始化总计划（历史参考）
 ```
@@ -124,22 +129,22 @@ aliases: [别名1, 别名2]
 | 角色 | 职责 |
 |------|------|
 | **人类** | 策展 raw/ 来源（决定放什么进来）；引导分析方向；提问与思考意义；审核 LLM 产出 |
-| **LLM** | 写 wiki 页面（concepts/entities/sources/comparisons）；维护 Wikilink 交叉引用；更新 index.md 和 log.md；检查一致性与完整性；摄取来源（/ingest）；回答查询（/query）；健康检查（/lint）；打磨笔记（/refine） |
+| **LLM** | 写 wiki 页面（concepts/entities/sources/comparisons）；维护 Wikilink 交叉引用；更新 index.md 和 log.md；检查一致性与完整性；摄取来源（ingest）；回答查询（query）；健康检查（lint）；打磨笔记（refine） |
 
 核心理念：**Obsidian 是 IDE，LLM 是程序员，Wiki 是代码库**。人类是产品经理/架构师，决定方向和验收标准。
 
 ## Skill 入口
 
-核心操作通过 `.claude/skills/` 定义，以 `/` 命令调用：
+核心操作通过 `.pi/skills/` 定义。pi 中使用 `/skill:name` 调用，Claude Code 中使用 `/name` 调用：
 
-| 命令 | Skill 文件 | 职责 |
-|------|-----------|------|
-| `/ingest` | `.claude/skills/ingest/SKILL.md` | 阅读 raw/ 来源 → 讨论 → 写摘要 → 更新 wiki/ → 更新 index.md + log.md |
-| `/query` | `.claude/skills/query/SKILL.md` | 读 index.md 定位 → QMD 检索 → 阅读综合 → 生成答案 |
-| `/lint` | `.claude/skills/lint/SKILL.md` | QMD 全局扫描 → 孤页/断链/矛盾/陈旧/缺口 → 生成报告 |
-| `/refine` | `.claude/skills/refine/SKILL.md` | 读 drafts/ → 审查 → 讨论迭代 → 归档判定 |
-| `qmd` | `.claude/skills/qmd/SKILL.md` | QMD 搜索引擎 — BM25+向量语义搜索、文档获取、索引状态 |
-| `obsidian-md` | `.claude/skills/obsidian-md/SKILL.md` | 生成 Obsidian 风格 markdown（wikilink、callout、frontmatter） |
+| pi 命令 | Claude Code 命令 | Skill 目录 | 职责 |
+|---------|-----------------|-----------|------|
+| `/skill:ingest` | `/ingest` | `.pi/skills/ingest/` | 阅读 raw/ 来源 → 讨论 → 写摘要 → 更新 wiki/ → 更新 index.md + log.md |
+| `/skill:query` | `/query` | `.pi/skills/query/` | 读 index.md 定位 → QMD 检索 → 阅读综合 → 生成答案 |
+| `/skill:lint` | `/lint` | `.pi/skills/lint/` | QMD 全局扫描 → 孤页/断链/矛盾/陈旧/缺口 → 生成报告 |
+| `/skill:refine` | `/refine` | `.pi/skills/refine/` | 读 drafts/ → 审查 → 讨论迭代 → 归档判定 |
+| `/skill:qmd` | `qmd` | `.pi/skills/qmd/` | QMD 搜索引擎 — BM25+向量语义搜索、文档获取、索引状态 |
+| `/skill:obsidian-md` | `obsidian-md` | `.pi/skills/obsidian-md/` | 生成 Obsidian 风格 markdown（wikilink、callout、frontmatter） |
 
 ## QMD 搜索引擎
 
@@ -148,8 +153,8 @@ QMD 是本 Wiki 的主要检索引擎，部署为 MCP 服务器（`qmd:qmd` skil
 - **检索方式**：BM25 关键词匹配 + 向量语义搜索 + LLM 重排序
 - **覆盖范围**：`wiki/` + `raw/`
 - **使用场景**：
-  - `/query` — 精准检索 wiki 知识，找到最相关页面
-  - `/lint` — 全局扫描断链、孤立页面、交叉引用缺口
+  - `/skill:query` — 精准检索 wiki 知识，找到最相关页面
+  - `/skill:lint` — 全局扫描断链、孤立页面、交叉引用缺口
 - **索引管理**：`.qmd/` 目录存储索引缓存，由 QMD 自动管理
 - **降级策略**：QMD 不可用时降级为 Glob + Grep 手动遍历
 
@@ -161,8 +166,8 @@ QMD 是本 Wiki 的主要检索引擎，部署为 MCP 服务器（`qmd:qmd` skil
 
 | 角色 | 职责 |
 |------|------|
-| **人类** | 创建 raw/ 目录（权威来源）；决定领域边界；审查 LLM 提案；保持 CLAUDE.md 目录树同步 |
-| **LLM** | 读取 CLAUDE.md 了解当前领域树；在 `/refine` 时提名新领域需求；在 `/lint` 时标记领域结构问题；**绝不单方面创建 raw/ 目录** |
+| **人类** | 创建 raw/ 目录（权威来源）；决定领域边界；审查 LLM 提案；保持 AGENTS.md 目录树同步 |
+| **LLM** | 读取 AGENTS.md 了解当前领域树；在 `/skill:refine` 时提名新领域需求；在 `/skill:lint` 时标记领域结构问题；**绝不单方面创建 raw/ 目录** |
 
 ### 命名规范
 
@@ -171,7 +176,7 @@ QMD 是本 Wiki 的主要检索引擎，部署为 MCP 服务器（`qmd:qmd` skil
 - **复数**用于同质对象集合：`algorithms`、`patterns`、`tools`、`languages`
 - **单数**用于学科和研究领域：`physics`、`rendering`、`networking`、`optimization`
 - **无缩写**，除非是行业通用标准：`ai`、`ui`、`ide` 允许，但 `bd`、`pm` 不允许
-- 新增领域时在 CLAUDE.md 目录树注释中附中文翻译
+- 新增领域时在 AGENTS.md 目录树注释中附中文翻译
 
 ### 深度限制
 
@@ -198,10 +203,10 @@ QMD 是本 Wiki 的主要检索引擎，部署为 MCP 服务器（`qmd:qmd` skil
 
 当某个现有子领域的源文件超过约 15 个时，可将子主题提升为独立子领域。例如：`raw/gamedev/rendering/` 中 Shader 相关内容积累到 15+ 个文件时，可创建 `raw/gamedev/shaders/`。
 
-### CLAUDE.md 同步
+### AGENTS.md 同步
 
-- 人类创建新领域时，必须同步更新 CLAUDE.md 的目录树
-- `/lint` 会检测磁盘实际目录与 CLAUDE.md 声明之间的不匹配
+- 人类创建新领域时，必须同步更新 AGENTS.md 的目录树
+- `/skill:lint` 会检测磁盘实际目录与 AGENTS.md 声明之间的不匹配
 - 不匹配将作为 lint 报告的警告项
 
 ## 设计原则
@@ -210,4 +215,4 @@ QMD 是本 Wiki 的主要检索引擎，部署为 MCP 服务器（`qmd:qmd` skil
 2. **Wikilink 是主要连接机制** — 不使用复杂的目录树导航，通过 `[[wikilink]]` 形成知识网络
 3. **index.md + log.md 双入口** — 内容导航和时间追溯互补，覆盖不同使用场景
 4. **每个页面必须有一个 frontmatter `type`** — 页面类型决定存放位置和处理方式
-5. **讨论是核心步骤** — /ingest 和 /refine 必须包含人类讨论环节，LLM 提建议，人类做决策
+5. **讨论是核心步骤** — ingest 和 refine 必须包含人类讨论环节，LLM 提建议，人类做决策
