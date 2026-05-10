@@ -1,7 +1,7 @@
 ---
 title: "Python 子进程管理"
 type: concept
-updated: 2026-05-07
+updated: 2026-05-10
 tags: [python, subprocess, 进程, 安全]
 aliases: [subprocess, Python进程]
 ---
@@ -82,3 +82,4 @@ CalledProcessError → 返回码非零（check=True 时）
 
 - [[sources/Python-运行命令行-摘要|Python 运行命令行来源摘要]] — 完整 API 参考和代码示例
 - [[concepts/Python文件IO模型|Python 文件 I/O 模型]]
+- [[concepts/CSharp进程管理|C# 进程管理]] — Process 类与 subprocess 设计哲学对比

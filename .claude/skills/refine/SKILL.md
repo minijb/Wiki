@@ -1,6 +1,6 @@
 ---
 name: refine
-description: 打磨笔记 — 读取 drafts/ 中不完善笔记，指出问题，与用户讨论后优化，完善后归档到 raw/ 对应领域，随后触发 ingest 生成 wiki 页面
+description: 打磨笔记 — 读取 drafts/ 中不完善笔记，指出问题，与用户讨论后优化，完善后归档到 raw/ 对应领域，随后触发 ingest 生成 wiki 页面。当用户说"打磨这篇笔记"、"帮我完善草稿"、"整理一下 drafts"、"润色笔记"、"看看这篇有什么问题"、"把草稿归档"、或者有零散/不完善的笔记需要整理提升时触发。只要涉及到 drafts/ 目录下文件的审查和优化就应该使用此 skill
 user-invocable: true
 ---
 

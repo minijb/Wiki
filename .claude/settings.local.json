@@ -14,7 +14,18 @@
       "Bash(mv \"D:/Wiki/drafts/00_Python_运行命令行.md\" \"D:/Wiki/drafts/Python-运行命令行.md\")",
       "Bash(mv \"D:/Wiki/drafts/01_Python_文件的增删改查.md\" \"D:/Wiki/drafts/Python-文件操作.md\")",
       "WebFetch(domain:www.npmjs.com)",
-      "WebFetch(domain:registry.npmjs.org)"
+      "WebFetch(domain:registry.npmjs.org)",
+      "Bash(mv \"00_Csharp_Process.md\" \"csharp-process.md\")",
+      "Bash(mv \"00_Csharp_Thread_启动线程的方式.md\" \"csharp-threading.md\")",
+      "Bash(mv \"01_CSharp_文件处理.md\" \"csharp-file-io.md\")",
+      "Bash(mv \"Csharp_Struct 如何减少装箱造成的GC.md\" \"csharp-struct-boxing-gc.md\")",
+      "Bash(grep -n '^[^`]*<[A-Za-z][A-Za-z0-9]*>' drafts/csharp-process.md drafts/csharp-file-io.md drafts/csharp-struct-boxing-gc.md drafts/csharp-threading.md)",
+      "Bash(grep -v '^\\\\s*//')",
+      "Bash(grep -v '`')",
+      "Bash(mv \"F:/Project_AI/wiki/drafts/csharp-file-io.md\" \"F:/Project_AI/wiki/raw/cs/languages/csharp-file-io.md\")",
+      "Bash(mv \"F:/Project_AI/wiki/drafts/csharp-process.md\" \"F:/Project_AI/wiki/raw/cs/languages/csharp-process.md\")",
+      "Bash(mv \"F:/Project_AI/wiki/drafts/csharp-struct-boxing-gc.md\" \"F:/Project_AI/wiki/raw/cs/languages/csharp-struct-boxing-gc.md\")",
+      "Bash(mv \"F:/Project_AI/wiki/drafts/csharp-threading.md\" \"F:/Project_AI/wiki/raw/cs/languages/csharp-threading.md\")"
     ]
   },
   "skipWebFetchPreflight": true

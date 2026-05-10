@@ -1,6 +1,6 @@
 ---
 name: ingest
-description: 摄取新来源 — 阅读 raw/ 来源、与用户讨论要点、生成摘要页面到 wiki/sources/、更新 wiki/index.md 和 wiki/concepts/、追加 wiki/log.md
+description: 摄取新来源到 Wiki — 阅读 raw/ 来源、与用户讨论要点、生成摘要页面到 wiki/sources/、更新 wiki/index.md 和 wiki/concepts/、追加 wiki/log.md。当用户说"把这个加到 wiki"、"摄取这篇文章"、"处理 raw 目录"、"添加来源"、"导入知识"、"消化这篇"、或者提到新的学习材料/文章/文档需要整理到知识库时触发。即使只是泛泛地说"帮我整理一下这些资料"或"把这篇文章收入知识库"，也要主动触发
 user-invocable: true
 ---
 

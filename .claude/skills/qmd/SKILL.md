@@ -1,6 +1,6 @@
 ---
 name: qmd
-description: QMD 搜索引擎 — 对 wiki/ 和 raw/ 执行 BM25+向量语义搜索、获取文档、检查索引状态。当需要精准检索 Wiki 知识库、按关键词/语义查找页面、获取文档全文、或检查搜索索引状态时使用此 skill。被 /query、/lint、/ingest 等上层 skill 调用。
+description: QMD 搜索引擎 — 对 wiki/ 和 raw/ 执行 BM25+向量语义搜索、获取文档、检查索引状态。当需要在 Wiki 中精准检索知识、按关键词/语义查找页面、获取文档全文、检查搜索索引状态、或进行任何跨页面内容搜索时使用此 skill。"在 wiki 里搜索 X"、"帮我搜一下 Y"、"全文搜索 Z"、"索引状态怎么样"等都应触发。被 /query、/lint、/ingest、/refine 等上层 skill 调用，也用于独立的搜索需求
 user-invocable: true
 ---
 

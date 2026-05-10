@@ -1,7 +1,7 @@
 ---
 title: "Python 文件 I/O 模型"
 type: concept
-updated: 2026-05-07
+updated: 2026-05-10
 tags: [python, file, io, pathlib, 安全]
 aliases: [Python文件IO, Python路径操作]
 ---
@@ -110,3 +110,4 @@ if not resolved.is_relative_to(base_dir.resolve()):
 
 - [[sources/Python-文件操作-摘要|Python 文件操作来源摘要]] — 完整 API 参考和代码示例
 - [[concepts/Python子进程管理|Python 子进程管理]]
+- [[concepts/CSharp文件IO|C# 文件 I/O]] — File/FileStream 分层架构与异步 I/O 对比

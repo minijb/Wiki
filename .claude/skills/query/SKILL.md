@@ -1,6 +1,6 @@
 ---
 name: query
-description: 查询 Wiki — 先读 wiki/index.md 定位，再调 QMD 精准检索 wiki/ 和 raw/，综合多个页面生成答案
+description: 查询 Wiki 知识库 — 先读 wiki/index.md 定位，再调 QMD 精准检索 wiki/ 和 raw/，综合多个页面生成答案。当用户问"wiki 里有没有关于 X 的"、"查一下 Y 概念"、"知识库里怎么说的"、"帮我找找 Z 相关的页面"、或者任何需要从 Wiki 知识库中检索、查找、回答知识性问题时触发。用户不必说"查询 wiki"——只要他们在向这个知识库提问，就应该触发此 skill
 user-invocable: true
 ---
 

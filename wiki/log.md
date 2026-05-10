@@ -1,7 +1,7 @@
 ---
 title: "Wiki 日志"
 type: log
-updated: 2026-05-07
+updated: 2026-05-10
 ---
 
 # Wiki 日志
@@ -26,5 +26,12 @@ updated: 2026-05-07
 - raw 归档: `raw/tools/ai-coding/PI-Agent-扩展插件.md`（新建领域 `raw/tools/ai-coding/`）
 - wiki 新建: [[sources/PI-Agent-扩展插件-摘要]], [[entities/PI-Agent]]
 - 更新 index.md（2 条目）
+
+## [2026-05-10] ingest | C# 系列笔记（4 drafts → 4 raw + 8 wiki pages）
+- 移动 4 个 C# 草稿至 `raw/cs/languages/`：csharp-file-io, csharp-process, csharp-struct-boxing-gc, csharp-threading
+- wiki 新建 4 来源摘要：[[sources/csharp-file-io-摘要]], [[sources/csharp-process-摘要]], [[sources/csharp-struct-boxing-gc-摘要]], [[sources/csharp-threading-摘要]]
+- wiki 新建 4 概念页：[[concepts/CSharp文件IO]], [[concepts/CSharp进程管理]], [[concepts/CSharp值类型性能]], [[concepts/CSharp并发模型]]
+- 更新 Python 概念页双向链接：[[concepts/Python文件IO模型]], [[concepts/Python子进程管理]]
+- 更新 index.md（8 条目）
 
 ## [2026-05-07] lint | 检查 10 页面，发现 1 问题（已修复）

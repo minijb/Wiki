@@ -1,12 +1,12 @@
 ---
 name: obsidian-md
-description: 生成 Obsidian 风格的 markdown 文件，支持 wikilink、callout、frontmatter、标签、嵌入等特有语法
+description: Obsidian Markdown 语法规范 — wikilink、callout、frontmatter、标签、嵌入、尖括号包裹等。**在本 Wiki 项目中，任何涉及创建、编写、编辑 .md 文件的操作都必须使用此 skill。** 无论用户说"写个页面"、"创建笔记"、"记录一下"、"更新文档"、"添加概念"、"完善草稿"、"写一篇关于X的wiki"还是任何会输出 markdown 内容的任务，都先触发此 skill 确保正确的 Obsidian 语法：wikilink 替代标准链接、callout 替代纯文本警告、frontmatter 必填、泛型尖括号用反引号包裹等。不要只在用户明确说"Obsidian"时才触发——只要涉及写 markdown 文件就要用
 user-invocable: true
 ---
 
 # Obsidian Markdown 生成器
 
-当用户需要生成 Obsidian 风格的 markdown 内容时，使用此 skill。生成的内容遵循 Obsidian 特有的语法规范。
+在本 Wiki 项目中，任何创建或编辑 markdown 文件的操作都应使用此 skill。生成的内容遵循 Obsidian 特有的语法规范。即使任务看起来简单（如"写个页面"、"更新索引"），也要先过一遍 Obsidian 语法规则——wikilink、callout、frontmatter、尖括号包裹等细节容易被忽略。
 
 ## 核心语法
 
@@ -123,6 +123,23 @@ $$
 状态:: 草稿
 ```
 
+### 尖括号包裹
+
+在正文（代码块外部）出现尖括号 `<>` 时，必须用反引号包裹整个表达式。Obsidian 会将裸 `<T>` 解析为 HTML 标签，导致内容从页面消失。
+
+```markdown
+❌ IEquatable<T> 是一种泛型接口        → 渲染异常：<T> 被当作 HTML 标签
+✅ `IEquatable<T>` 是一种泛型接口      → 正确渲染为行内代码
+
+❌ 使用 Span<int> 切片数据              → 渲染异常
+✅ 使用 `Span<int>` 切片数据            → 正确渲染
+```
+
+尖括号常见场景：泛型参数（`<T>`、`<int>`、`<string>`）、泛型类型（`List<T>`、`Dictionary<K,V>`）、约束（`where T : struct`）。
+
+> [!warning] 代码块内的尖括号不要包裹
+> ```csharp 内部是代码环境，Observian 不会将其中 `<T>` 解析为 HTML，保持原样即可。
+
 ## 生成规则
 
 1. **所有页面必须有 frontmatter**，至少包含 `title` 和 `date` 字段
@@ -133,4 +150,5 @@ $$
 6. **嵌入图片/文件用 `![[ ]]`** 语法而非 `![alt](url)`
 7. **任务清单用 `- [ ]`** 语法
 8. **表格前必须有空行**：表格与前一段文字之间保留一个空行，确保 Obsidian 正确渲染
-9. **保持 Obsidian 兼容性**：不使用 HTML 标签，优先使用 Obsidian 原生语法
+9. **尖括号用反引号包裹**：正文中出现 `<T>`、`<int>` 等泛型尖括号时必须用反引号包裹，防止 Obsidian 将其解析为 HTML 标签导致渲染异常。代码块内部除外。
+10. **保持 Obsidian 兼容性**：不使用 HTML 标签，优先使用 Obsidian 原生语法
