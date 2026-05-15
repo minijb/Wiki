@@ -9,11 +9,14 @@ type: framework
 aliases:
   Inspector
 description: Unity自定义Inspector面板
+status: archived
 draft: false
+archived-to: raw/gamedev/editor-extensions/Unity自定义Inspector.md
 ---
 
+## 概述
 
-# Unity编辑器 自定义Inspector面板
+本页介绍如何通过 `[CustomEditor]` 自定义 MonoBehaviour 的 Inspector 面板，包括两种实现方式（直接访问 Target vs SerializedProperty）、常用布局控件、数组处理和 Scene 视图扩展。
 
 ## 目标组件
 
@@ -44,7 +47,8 @@ public class CustomEditorTestEditor : Editor
 ```
 
 - 简单直接，代码少
-- **缺点**：不支持 Undo（Ctrl+Z 无效）、不支持 Prefab 覆盖、多对象编辑时需额外处理
+- 不支持自动 Undo — 需要手动 `Undo.RecordObject(_target, "Change")`
+- 不支持 Prefab 覆盖、多对象编辑时需额外处理
 
 ## 方式 2：SerializedProperty（推荐）
 
@@ -73,6 +77,8 @@ public class CustomEditorTestEditor : Editor
 - 需要序列化感知（Undo/Prefab/多选）就用 SerializedProperty
 
 ## 常用布局
+
+`EditorGUILayout`（自动布局）比 `EditorGUI`（手动 Rect 定位）更便捷，适合大多数 Inspector 场景；`EditorGUI` 适合需要精确像素控制的场景。
 
 ```csharp
 public override void OnInspectorGUI()
@@ -117,3 +123,63 @@ public override void OnInspectorGUI()
 | `EditorGUILayout.HelpBox()` | 信息/警告/错误提示框 |
 | `GUI.enabled` | 禁用/启用控件交互 |
 | `EditorGUILayout.Separator()` | 分隔线 |
+
+## 数组处理
+
+```csharp
+private SerializedProperty floatArrayProp;
+
+private void OnEnable()
+{
+    floatArrayProp = serializedObject.FindProperty("floatArray");
+}
+
+public override void OnInspectorGUI()
+{
+    serializedObject.Update();
+
+    // 绘制数组（自动处理增删元素）
+    EditorGUILayout.PropertyField(floatArrayProp, true);
+
+    // 手动操作数组
+    if (GUILayout.Button("Add Element"))
+    {
+        floatArrayProp.InsertArrayElementAtIndex(floatArrayProp.arraySize);
+    }
+
+    serializedObject.ApplyModifiedProperties();
+}
+```
+
+| 数组方法 | 说明 |
+|----------|------|
+| `arraySize` | 数组长度 |
+| `GetArrayElementAtIndex(i)` | 获取第 i 个元素的 SerializedProperty |
+| `InsertArrayElementAtIndex(i)` | 在位置 i 插入新元素 |
+| `DeleteArrayElementAtIndex(i)` | 删除位置 i 的元素 |
+
+## Scene 视图扩展
+
+`CustomEditor` 还可覆写 `OnSceneGUI()` 在 Scene 视图绘制交互元素。
+
+```csharp
+[CustomEditor(typeof(CustomEditorTest))]
+public class CustomEditorTestEditor : Editor
+{
+    private void OnSceneGUI()
+    {
+        var t = target as CustomEditorTest;
+        Handles.Label(t.transform.position + Vector3.up * 2, $"Int: {t.intValue}");
+    }
+}
+```
+
+> `OnSceneGUI` 仅在 Editor 脚本中可用。详见 [[concepts/Unity Gizmos 调试|Gizmos 调试]]。
+
+## 参见
+
+- [[concepts/Unity编辑器特性速查|Unity 编辑器特性]] — 内置 Attribute 速查表
+- [[concepts/Unity自定义PropertyDrawer|自定义 PropertyDrawer]] — PropertyAttribute + PropertyDrawer
+- [[concepts/Unity编辑器全局设置|编辑器全局设置]] — Editor 文件夹、MenuItem、Selection
+- [[concepts/Unity编辑器窗口|编辑器窗口]] — EditorWindow / ScriptableWizard
+- [[concepts/Unity Gizmos 调试|Gizmos 调试]] — Gizmos / DrawGizmo / Handles

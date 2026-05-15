@@ -8,22 +8,32 @@ tags:
 type: framework
 aliases:
   自定义编辑器
-description: Unity自定义编辑器CustomEditor
+description: Unity自定义PropertyAttribute与PropertyDrawer
+status: archived
 draft: false
+archived-to: raw/gamedev/editor-extensions/Unity自定义PropertyDrawer.md
 ---
 
+## 概述
 
-## 1. C# 自定义 Attribute
+本页介绍如何通过自定义 Attribute 扩展 Unity 编辑器的 Inspector 显示。第一节讲 C# 自定义 Attribute 与反射（这是 Unity 编辑器扩展的底层机制），第二节讲 Unity 的 `PropertyAttribute` + `PropertyDrawer` 实战。
+
+## C# 自定义 Attribute
+
+`[CustomEditor]`、`[CustomPropertyDrawer]` 等 Unity 编辑器特性正是基于 C# 自定义 Attribute + 反射这一机制。
+
+> `[AttributeUsage]` 可限制 Attribute 的作用目标（类、字段、方法等），实战中建议始终声明。
 
 ```csharp
-// 定义自定义 Attribute
+// 1. 定义自定义 Attribute
+[AttributeUsage(AttributeTargets.Field)]
 public class HttpApiKey : Attribute
 {
     public string apiName;
     public HttpApiKey(string name) => apiName = name;
 }
 
-// 使用
+// 2. 使用
 public class HttpId
 {
     [HttpApiKey("Register")]
@@ -32,7 +42,7 @@ public class HttpId
     public const int loginId = 10002;
 }
 
-// 反射读取
+// 3. 反射读取
 public static void ReadAttributes()
 {
     foreach (var field in typeof(HttpId).GetFields())
@@ -47,20 +57,23 @@ public static void ReadAttributes()
 }
 ```
 
-> C# 自定义 Attribute + 反射是 Unity 编辑器扩展的基础，`[CustomEditor]`、`[CustomPropertyDrawer]` 等都依赖此机制。
+## Unity PropertyAttribute
 
-
-## 2. Unity PropertyAttribute
+### 定义 PropertyAttribute
 
 ```csharp
-// 1. 定义自定义 Attribute
 public class ShowTimeAttribute : PropertyAttribute
 {
     public readonly bool showHour;
     public ShowTimeAttribute(bool showHour = false) => this.showHour = showHour;
 }
+```
 
-// 2. 定义对应的 PropertyDrawer
+> `PropertyAttribute` 有 `order` 属性，当同一字段有多个 Drawer 时控制执行顺序（值越小越先执行）。
+
+### 定义 PropertyDrawer
+
+```csharp
 [CustomPropertyDrawer(typeof(ShowTimeAttribute))]
 public class TimerDrawer : PropertyDrawer
 {
@@ -96,11 +109,22 @@ public class TimerDrawer : PropertyDrawer
         return showHour ? $"{h:D2}:{m:D2}:{s:D2}" : $"{m:D2}:{s:D2}";
     }
 }
+```
 
-// 3. 使用
+### 使用
+
+```csharp
 public class Test : MonoBehaviour
 {
     [ShowTime(true)]
     public int time = 3661; // Inspector 输入秒数，下方显示 "01:01:01"
 }
 ```
+
+## 参见
+
+- [[concepts/Unity编辑器特性速查|Unity 编辑器特性]] — 内置 Attribute 速查表
+- [[concepts/Unity自定义Inspector|自定义 Inspector]] — CustomEditor + SerializedProperty
+- [[concepts/Unity编辑器全局设置|编辑器全局设置]] — Editor 文件夹、MenuItem、Selection
+- [[concepts/Unity编辑器窗口|编辑器窗口]] — EditorWindow / ScriptableWizard
+- [[concepts/Unity Gizmos 调试|Gizmos 调试]] — Gizmos / DrawGizmo / Handles

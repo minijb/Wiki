@@ -1,12 +1,22 @@
 ---
 title: "Wiki 日志"
 type: log
-updated: 2026-05-10
+updated: 2026-05-11
 ---
 
 # Wiki 日志
 
 按时间倒序记录所有 Wiki 操作。只追加，不修改历史。
+
+## [2026-05-11] lint | 检查 32 页面，发现 5 交叉引用缺口、1 领域结构问题
+
+## [2026-05-11] refine+ingest | Unity 编辑器扩展系列（6 drafts → 6 raw + 12 wiki pages）
+- refine: 打磨 6 个 Unity 编辑器草稿（全局设置、特性速查、PropertyDrawer、Inspector、窗口、Gizmos）
+- 新建领域: `raw/gamedev/editor-extensions/`
+- raw 归档: 6 个文件至 editor-extensions/
+- wiki 新建 6 来源摘要: [[sources/Unity编辑器全局-摘要]], [[sources/Unity编辑器特性速查-摘要]], [[sources/Unity自定义PropertyDrawer-摘要]], [[sources/Unity自定义Inspector-摘要]], [[sources/Unity编辑器窗口-摘要]], [[sources/Unity Gizmos调试-摘要]]
+- wiki 新建 6 概念页: [[concepts/Unity编辑器全局设置]], [[concepts/Unity编辑器特性速查]], [[concepts/Unity自定义PropertyDrawer]], [[concepts/Unity自定义Inspector]], [[concepts/Unity编辑器窗口]], [[concepts/Unity Gizmos 调试]]
+- 更新 index.md（12 条目）
 
 ## [2026-05-07] refine+ingest | Lua EmmyLua 系列笔记（4 drafts → 2 raw + 4 wiki pages）
 - refine: 合并 drafts/00-03 为 2 个 raw 文件，补充网上资料，修正 frontmatter/分类/示例

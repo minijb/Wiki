@@ -18,7 +18,8 @@ wiki/                        # Wiki 知识库根目录
 │   │   ├── gameplay/        # 玩法系统、战斗、技能
 │   │   ├── ui/              # UGUI、UI Toolkit
 │   │   ├── audio/           # 音频系统
-│   │   └── optimization/    # 性能优化、内存管理
+│   │   ├── optimization/    # 性能优化、内存管理
+│   │   └── editor-extensions/  # Unity 编辑器扩展
 │   ├── cs/                  # 计算机科学理论沉淀
 │   │   ├── languages/       # C#, C++, Lua, Python
 │   │   ├── design-patterns/ # GoF, 游戏编程模式

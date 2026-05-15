@@ -10,11 +10,16 @@ type: framework
 aliases:
   Gizmos
 description: Unity Gizmos辅助调试绘制
+status: archived
 draft: false
+archived-to: raw/gamedev/editor-extensions/Unity Gizmos调试.md
 ---
 
+## 概述
 
-## 1. OnDrawGizmos（MonoBehaviour 内置方法）
+本页介绍 Unity Scene 视图中的调试绘制工具：`OnDrawGizmos` / `[DrawGizmo]`（纯显示）和 `Handles`（可交互）。从快速原型到正式项目的完整对比。
+
+## OnDrawGizmos（MonoBehaviour 内置方法）
 
 ```csharp
 public class Example : MonoBehaviour
@@ -39,13 +44,15 @@ public class Example : MonoBehaviour
 
 | 方法 | 调用时机 |
 |------|----------|
-| `OnDrawGizmos()` | 每帧，对所有对象 |
+| `OnDrawGizmos()` | 每帧，对所有可见且 activeInHierarchy 为 true 的对象 |
 | `OnDrawGizmosSelected()` | 每帧，仅选中对象 |
+
+> Hierarchy 中折叠的对象不会触发绘制（因 GameObject 被禁用时不在活动层级中）。Prefab Mode 中同样有效。
 
 **优点**：简单直观，逻辑和数据在同一处
 **缺点**：耦合在 MonoBehaviour 中，无法为内置组件绘制；Subscene/Live Link 场景中可能引发不必要的转换
 
-## 2. [DrawGizmo]（Editor 脚本，推荐）
+## DrawGizmo（Editor 脚本，推荐）
 
 ```csharp
 // 放在 Editor 文件夹中
@@ -75,19 +82,27 @@ public class ExampleGizmoDrawer
 | DOTS / Subscene / Live Link | `[DrawGizmo]`（必须） |
 | 为内置组件绘制 | `[DrawGizmo]`（唯一选择） |
 
-## 3. GizmoType 枚举
+## GizmoType 枚举
 
 | 值 | 说明 |
 |----|------|
-| `Active` | 对象激活时绘制 |
+| `Active` | 对象 activeInHierarchy 为 true 时绘制（对普通 GameObject 通常始终为 true） |
 | `Selected` | 对象被选中时绘制 |
 | `NonSelected` | 对象未被选中时绘制 |
 | `InSelectionHierarchy` | 在选中层级的子级中 |
 | `Pickable` | Gizmo 可被点击选中 |
 
-## 4. Gizmos 常用方法
+## Gizmos 常用方法
 
-> `Gizmos.color` 是全局静态变量，修改后影响后续所有绘制，用完后应恢复原值。
+> `Gizmos.color` 是全局静态变量，修改后影响后续所有绘制，用完后务必恢复。
+
+```csharp
+// 推荐：保存并恢复颜色
+var oldColor = Gizmos.color;
+Gizmos.color = Color.yellow;
+Gizmos.DrawWireSphere(pos, 1f);
+Gizmos.color = oldColor;
+```
 
 ```csharp
 // 基础形状
@@ -114,9 +129,11 @@ Gizmos.DrawWireMesh(mesh, position, rotation, scale);
 Gizmos.DrawGUITexture(screenRect, texture);
 ```
 
-## 5. Handles — 可交互的编辑器绘制
+> `Gizmos` 在 `UnityEngine` 命名空间中，Runtime 代码也可调用但仅在 Scene 视图可见。
 
-`Handles` 提供比 `Gizmos` 更强大的 3D 绘制能力，**支持交互**（拖拽、旋转等），仅在 Scene 视图可见。
+## Handles — 可交互的编辑器绘制
+
+`Handles` 提供比 `Gizmos` 更强大的 3D 绘制能力，**支持交互**（拖拽、旋转等），仅在 Scene 视图可见。`Handles` 在 `UnityEditor` 命名空间中，必须在 Editor 文件夹内使用。
 
 ```csharp
 // 放在 Editor 文件夹中
@@ -131,7 +148,7 @@ public class ExampleEditor : Editor
         // 绘制（不可交互）
         Handles.color = new Color(1, 0.8f, 0.4f, 1);
         Handles.DrawWireDisc(pos, Vector3.up, 1f);
-        Handles.Label(pos + Vector3.up * 2, $"Value: {t.value:F1}");
+        Handles.Label(pos + Vector3.up * 2, $"<color=yellow>Value: {t.value:F1}</color>");
 
         // 交互手柄
         EditorGUI.BeginChangeCheck();
@@ -145,6 +162,8 @@ public class ExampleEditor : Editor
 }
 ```
 
+> `Handles.Label` 支持富文本标签（`<color>`、`<b>`、`<i>`、`<size>`）。
+
 | Handles 方法 | 说明 |
 |-------------|------|
 | `PositionHandle(pos, rot)` | 3D 位置拖拽手柄 |
@@ -154,19 +173,29 @@ public class ExampleEditor : Editor
 | `FreeMoveHandle(pos, size, snap, capFunc)` | 自由移动手柄 |
 | `Button(pos, rot, size, pickSize, capFunc)` | 3D 可点击按钮 |
 | `DrawLine(p1, p2)` | 绘制线段 |
+| `DrawAAPolyLine(points)` | 抗锯齿线段（比 `DrawLine` 更清晰） |
 | `DrawWireDisc(center, normal, radius)` | 绘制圆环 |
 | `DrawSolidDisc(center, normal, radius)` | 绘制实心圆盘 |
 | `DrawWireArc(center, normal, from, angle, radius)` | 绘制弧形 |
 | `DrawSolidArc(center, normal, from, angle, radius)` | 绘制扇形 |
-| `Label(position, text)` | 3D 文字标签 |
+| `Label(position, text)` | 3D 文字标签（支持富文本） |
 
 ### Gizmos vs Handles
 
 | | Gizmos | Handles |
 |------|--------|---------|
+| **命名空间** | `UnityEngine`（Runtime 可用） | `UnityEditor`（仅 Editor） |
 | **交互** | ❌ 纯显示 | ✅ 可拖拽/旋转/点击 |
 | **可见范围** | Scene + Game 视图 | 仅 Scene 视图 |
 | **脚本位置** | 任意 MonoBehaviour 或 Editor | 必须 Editor 文件夹 |
 | **用途** | 调试可视化 | 编辑器工具/自定义手柄 |
 
-> 所有 Gizmos/Handles 绘制都应避免复杂计算——每帧调用会直接影响编辑器流畅度。
+> 所有 Gizmos/Handles 绘制都应避免复杂计算 — 每帧调用会直接影响编辑器流畅度。
+
+## 参见
+
+- [[concepts/Unity编辑器全局设置|编辑器全局设置]] — Editor 文件夹、MenuItem、Selection
+- [[concepts/Unity自定义Inspector|自定义 Inspector]] — CustomEditor + OnSceneGUI
+- [[concepts/Unity编辑器特性速查|Unity 编辑器特性]] — 内置 Attribute 速查表
+- [[concepts/Unity编辑器窗口|编辑器窗口]] — EditorWindow / ScriptableWizard
+- [[concepts/Unity自定义PropertyDrawer|自定义 PropertyDrawer]] — PropertyAttribute + PropertyDrawer

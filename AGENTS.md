@@ -21,13 +21,15 @@ wiki/                        # Wiki 知识库根目录
 │   │   ├── gameplay/        # 玩法系统、战斗、技能
 │   │   ├── ui/              # UGUI、UI Toolkit
 │   │   ├── audio/           # 音频系统
-│   │   └── optimization/    # 性能优化、内存管理
+│   │   ├── optimization/    # 性能优化、内存管理
+│   │   └── editor-extensions/  # Unity 编辑器扩展
 │   ├── cs/                  # 计算机科学理论沉淀
 │   │   ├── languages/       # C#, C++, Lua, Python
 │   │   ├── design-patterns/ # GoF, 游戏编程模式
 │   │   ├── architecture/    # SOLID, DDD, ECS, 软件架构
 │   │   └── algorithms/      # 算法与数据结构
 │   └── tools/               # 工具操作流程
+│       ├── ai-coding/        # AI 编码代理（PI Agent 扩展生态）
 │       ├── git/             # 版本控制
 │       ├── ide/             # Rider, VS, VS Code
 │       ├── docker/          # 容器化
