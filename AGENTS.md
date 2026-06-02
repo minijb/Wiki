@@ -1,15 +1,14 @@
 # AGENTS.md — Wiki Schema
 
-本文件定义 LLM Wiki 工作区的静态约定。Skills（`.pi/skills/`）承载行为，此文件承载数据结构与格式规范。
+本文件定义 LLM Wiki 工作区的静态约定。Skills（`.omp/skills/`）承载行为，此文件承载数据结构与格式规范。
 
-> 本文件同时兼容 pi 和 Claude Code。pi 读取 `AGENTS.md` 或 `CLAUDE.md`，skill 通过 `/skill:name` 调用。
+> 本文件为 oh-my-pi (omp) 工作区上下文文件。Skill 通过 `/skill:<name>` 调用，内容通过 `skill://<name>` 读取。
 
 ## 目录结构
 
 ```
 wiki/                        # Wiki 知识库根目录
 ├── AGENTS.md                # 本文件 — Schema 层（LLM 只读，人类维护）
-├── CLAUDE.md                # Claude Code 兼容版（内容与 AGENTS.md 同步）
 ├── raw/                     # 原始来源层（不可变：LLM 只读不写，人类策展）
 │   ├── assets/              # 本地图片、PDF 等附件
 │   ├── gamedev/             # 游戏开发实践综合
@@ -33,6 +32,7 @@ wiki/                        # Wiki 知识库根目录
 │       ├── git/             # 版本控制
 │       ├── ide/             # Rider, VS, VS Code
 │       ├── docker/          # 容器化
+│       ├── shell/           # Shell、终端、WSL 环境
 │       └── ci-cd/           # 持续集成/部署
 ├── wiki/                    # Wiki 层（LLM 拥有：LLM 读写，人类审阅）
 │   ├── index.md             # 内容导向目录（按页面类型分节，双入口之一）
@@ -43,14 +43,13 @@ wiki/                        # Wiki 知识库根目录
 │   ├── sources/             # 来源摘要 — 每篇 raw/ 来源对应一个摘要页面
 │   └── comparisons/         # 对比分析 — 跨来源的矛盾、对比、权衡
 ├── drafts/                  # 用户打磨区（不在 Karpathy 原生规范中，扩展）
-├── .pi/skills/              # pi Skill 定义目录
+├── .omp/skills/             # oh-my-pi Skill 定义目录
 │   ├── ingest/              # /skill:ingest — 摄取来源到 wiki
 │   ├── query/               # /skill:query — 查询 wiki
 │   ├── lint/                # /skill:lint  — wiki 健康检查
 │   ├── refine/              # /skill:refine — 打磨 drafts/ 笔记
 │   ├── qmd/                 # QMD 搜索引擎
 │   └── obsidian-md/         # Obsidian Markdown 生成器
-├── .claude/skills/          # Claude Code Skill 定义目录（与 .pi/skills/ 保持同步）
 ├── .qmd/                    # QMD 搜索引擎索引缓存（自动管理）
 └── PLAN.md                  # 初始化总计划（历史参考）
 ```
@@ -137,16 +136,16 @@ aliases: [别名1, 别名2]
 
 ## Skill 入口
 
-核心操作通过 `.pi/skills/` 定义。pi 中使用 `/skill:name` 调用，Claude Code 中使用 `/name` 调用：
+核心操作通过 `.omp/skills/` 定义，使用 `/skill:<name>` 调用：
 
-| pi 命令 | Claude Code 命令 | Skill 目录 | 职责 |
-|---------|-----------------|-----------|------|
-| `/skill:ingest` | `/ingest` | `.pi/skills/ingest/` | 阅读 raw/ 来源 → 讨论 → 写摘要 → 更新 wiki/ → 更新 index.md + log.md |
-| `/skill:query` | `/query` | `.pi/skills/query/` | 读 index.md 定位 → QMD 检索 → 阅读综合 → 生成答案 |
-| `/skill:lint` | `/lint` | `.pi/skills/lint/` | QMD 全局扫描 → 孤页/断链/矛盾/陈旧/缺口 → 生成报告 |
-| `/skill:refine` | `/refine` | `.pi/skills/refine/` | 读 drafts/ → 审查 → 讨论迭代 → 归档判定 |
-| `/skill:qmd` | `qmd` | `.pi/skills/qmd/` | QMD 搜索引擎 — BM25+向量语义搜索、文档获取、索引状态 |
-| `/skill:obsidian-md` | `obsidian-md` | `.pi/skills/obsidian-md/` | 生成 Obsidian 风格 markdown（wikilink、callout、frontmatter） |
+| 命令 | Skill 目录 | 职责 |
+|------|-----------|------|
+| `/skill:ingest` | `.omp/skills/ingest/` | 阅读 raw/ 来源 → 讨论 → 写摘要 → 更新 wiki/ → 更新 index.md + log.md |
+| `/skill:query` | `.omp/skills/query/` | 读 index.md 定位 → QMD 检索 → 阅读综合 → 生成答案 |
+| `/skill:lint` | `.omp/skills/lint/` | QMD 全局扫描 → 孤页/断链/矛盾/陈旧/缺口 → 生成报告 |
+| `/skill:refine` | `.omp/skills/refine/` | 读 drafts/ → 审查 → 讨论迭代 → 归档判定 |
+| `/skill:qmd` | `.omp/skills/qmd/` | QMD 搜索引擎 — BM25+向量语义搜索、文档获取、索引状态 |
+| `/skill:obsidian-md` | `.omp/skills/obsidian-md/` | 生成 Obsidian 风格 markdown（wikilink、callout、frontmatter） |
 
 ## QMD 搜索引擎
 

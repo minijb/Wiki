@@ -1,0 +1,3 @@
+# QMD search engine cache
+.qmd/index.sqlite
+.qmd/index.yml
