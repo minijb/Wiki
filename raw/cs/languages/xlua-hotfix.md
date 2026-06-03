@@ -1,9 +1,9 @@
 ---
 title: "XLua 互调与热补丁"
-source_type: framework-reference
-tags: [unity, xlua, lua, csharp, hotfix, il-injection]
-created: 2026-06-02
+type: source
 updated: 2026-06-02
+tags: [unity, xlua, lua, csharp, hotfix, il-injection]
+description: XLua 互调与热补丁完整参考：C# 调用 Lua（LuaEnv/自定义 Loader/Table 映射/Function 映射/By Value vs By Reference）、Lua 调用 C#（CS 命名空间/ref out 参数/泛型容器/Delegate Event）、性能优化（generic 方法缓存/Generate 代码生成/数组优化）、IL 注入热补丁原理与配置
 ---
 
 # XLua 互调与热补丁
@@ -608,3 +608,197 @@ XLua 调试推荐使用 VS Code 的 Attach 模式（Rider EmmyLua Debug 存在�
 - [xLua GitHub](https://github.com/Tencent/xLua)
 - [xLua 官方教程](https://github.com/Tencent/xLua/blob/master/Assets/XLua/Doc/XLua教程.md)
 - [xLua Hotfix 文档](https://github.com/Tencent/xLua/blob/master/Assets/XLua/Doc/hotfix.md)
+
+---
+
+## 6. LuaBehaviour 生产模式
+
+LuaBehaviour 是 XLua 项目中最常用的 MonoBehaviour 集成模式——通过一个 C# 组件桥接 Lua 脚本，实现用 Lua 编写游戏逻辑。每个 LuaBehaviour 实例拥有独立的沙箱脚本域（sandbox table），防止全局变量冲突。
+
+```csharp
+using UnityEngine;
+using XLua;
+using System;
+
+namespace XLuaTest
+{
+    [System.Serializable]
+    public class Injection
+    {
+        public string name;
+        public GameObject value;
+    }
+
+    [LuaCallCSharp]
+    public class LuaBehaviour : MonoBehaviour
+    {
+        public TextAsset luaScript;
+        public Injection[] injections;
+
+        internal static LuaEnv luaEnv = new LuaEnv(); // 所有 LuaBehaviour 共享一个 LuaEnv
+        internal static float lastGCTime = 0;
+        internal const float GCInterval = 1; // 每秒 GC Tick 一次
+
+        private Action luaStart;
+        private Action luaUpdate;
+        private Action luaOnDestroy;
+        private LuaTable scriptScopeTable;
+
+        void Awake()
+        {
+            // 为每个脚本创建独立的沙箱域
+            scriptScopeTable = luaEnv.NewTable();
+
+            // 设置元表 __index 指向 Global，使沙箱能访问全局变量
+            using (LuaTable meta = luaEnv.NewTable())
+            {
+                meta.Set("__index", luaEnv.Global);
+                scriptScopeTable.SetMetaTable(meta);
+            }
+
+            // 将 C# 对象注入 Lua 脚本域
+            scriptScopeTable.Set("self", this);
+            foreach (var injection in injections)
+            {
+                scriptScopeTable.Set(injection.name, injection.value);
+            }
+
+            // 在沙箱域中执行 Lua 脚本
+            luaEnv.DoString(luaScript.text, luaScript.name, scriptScopeTable);
+
+            // 从沙箱域中获取 Lua 函数
+            Action luaAwake = scriptScopeTable.Get<Action>("awake");
+            scriptScopeTable.Get("start", out luaStart);
+            scriptScopeTable.Get("update", out luaUpdate);
+            scriptScopeTable.Get("ondestroy", out luaOnDestroy);
+
+            luaAwake?.Invoke();
+        }
+
+        void Start() => luaStart?.Invoke();
+
+        void Update()
+        {
+            luaUpdate?.Invoke();
+
+            // 定时触发 Lua GC
+            if (Time.time - lastGCTime > GCInterval)
+            {
+                luaEnv.Tick();
+                lastGCTime = Time.time;
+            }
+        }
+
+        void OnDestroy()
+        {
+            luaOnDestroy?.Invoke();
+            scriptScopeTable.Dispose();
+            luaOnDestroy = null;
+            luaUpdate = null;
+            luaStart = null;
+        }
+    }
+}
+```
+
+> [!tip] 沙箱域隔离
+> 每个 LuaBehaviour 实例通过 `luaEnv.NewTable()` 创建独立的脚本域（sandbox table），脚本内通过 `self` 访问宿主 GameObject。`Injection` 数组支持在 Inspector 中直接拖拽赋值，将 C# 对象注入 Lua 环境。
+
+> [!note] EmmyLua 调试
+> 将 Lua 脚本后缀设为 `.lua.txt` 可被 Unity 识别为 TextAsset。Rider 配合 EmmyLua 插件可实现断点调试，但需将部分代码包装到特定组件中。
+
+## 7. 热补丁高级场景
+
+### 7.1 整个类替换与状态保持
+
+当需要替换一个类的全部方法时，使用 `util.state()` 在 Lua 侧创建持久状态表：
+
+```lua
+xlua.hotfix(CS.StatefullTest, {
+    ['.ctor'] = function(csobj)
+        return util.state(csobj, {evt = {}, start = 0, prop = 0})
+    end;
+    set_AProp = function(self, v)
+        print('set_AProp', v)
+        self.prop = v
+    end;
+    get_AProp = function(self) return self.prop end;
+    Start = function(self)
+        for _, cb in ipairs(self.evt) do cb(self.start, 2) end
+        self.start = self.start + 1
+    end;
+})
+```
+
+`util.state(csobj, initialTable)` 为 C# 对象附加 Lua 状态表，使其在多次 hotfix 调用间保持数据。
+
+### 7.2 操作符重载热补丁
+
+C# 的操作符有内部映射名称：
+
+| C# 操作符 | 内部名称 |
+|:----------|:---------|
+| `+` | `op_Addition` |
+| `-` | `op_Subtraction` |
+| `*` | `op_Multiply` |
+| `/` | `op_Division` |
+| `==` | `op_Equality` |
+
+```lua
+xlua.hotfix(CS.MyClass, 'op_Addition', function(self, a, b)
+    return a.Value + b.Value
+end)
+```
+
+### 7.3 事件直接触发
+
+通过 `xlua.private_accessible` 可访问事件的私有 delegate 字段，直接触发事件：
+
+```lua
+xlua.private_accessible(CS.MyClass)
+-- 直接触发事件
+obj['&MyEvent']()
+```
+
+> [!warning] 版本差异
+> XLua 2.1.11+ 不再需要显式调用 `xlua.private_accessible` 即可直接访问事件字段。
+
+### 7.4 Unity 协程热补丁
+
+使用 `util.cs_generator` 模拟 C# 的 `IEnumerator`：
+
+```lua
+local util = require 'xlua.util'
+xlua.hotfix(CS.HotFixSubClass, {
+    Start = function(self)
+        return util.cs_generator(function()
+            while true do
+                coroutine.yield(CS.UnityEngine.WaitForSeconds(3))
+                print('Wait for 3 seconds')
+            end
+        end)
+    end;
+})
+```
+
+### 7.5 `util.hotfix_ex` 增强热补丁
+
+`util.hotfix_ex` 是 `xlua.hotfix` 的增强版本，允许在 fix 函数内部执行原始 C# 逻辑：
+
+```lua
+util.hotfix_ex(CS.MyClass, 'MyMethod', function(self)
+    -- 执行原始 C# 逻辑
+    -- 缺点是 fix 函数执行略慢
+end)
+```
+
+### 7.6 `base()` 调用父类实现
+
+子类 override 函数可通过 `base()` 调用父类原始实现：
+
+```lua
+xlua.hotfix(CS.BaseTest, 'Foo', function(self, p)
+    print('patched BaseTest', p)
+    base(self):Foo(p)  -- 调用原始 C# 实现
+end)
+```

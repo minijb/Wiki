@@ -79,13 +79,23 @@ Notes/
 
 **文件命名**：关键词前置（`设计模式_工厂模式.md`）、状态标识（`[WIP]`、`[DRAFT]`）、ISO 日期（`20230725_`）。
 
-**插件**：Admonition（增强提示块）、Dataview（元数据聚合查询）。
+**插件**：Admonition（增强提示块，支持 note/abstract/info/tip/success/question/warning/failure/danger/bug/example/quote 类型）、Dataview（元数据聚合查询）、Kanban（看板）、Templater（模板引擎）、QuickAdd（自动化操作）、Excalidraw（画图）。
 
-**最佳实践**：`ripgrep` 全文搜索、定期归档（每季度）、避免深层嵌套（用标签关联）、`⭐_Highlights/` 精华内容。
+**嵌入**：`![[filename]]` 支持 md/图像/音频/视频/PDF。`<iframe>` 嵌入网页。`![[image.png|100x100]]` 调整大小。
+
 
 ### xmake
 
 基于 Lua 的跨平台 C/C++ 构建工具，内置包管理。
+
+
+### 静态博客工具
+
+Docsify（JavaScript 运行时渲染）、Hugo（Go 极速构建）、Hexo（Node.js 中文社区）、VuePress（Vue 驱动）、GitBook（Git 仓库文档）、Jekyll（GitHub Pages 原生支持）。
+
+### 多端同步
+
+Syncthing — 开源 P2P 跨平台文件夹同步（端到端加密、无中心服务器）。iOS 使用 Mobius Sync 兼容。备选：Resilio Sync（闭源）。
 
 ## 关联页面
 

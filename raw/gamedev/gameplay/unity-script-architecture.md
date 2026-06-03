@@ -715,3 +715,110 @@ Awake → OnEnable → Start → Update → FixedUpdate → LateUpdate → OnGUI
 ---
 
 > 选择建议：小型项目基础分层即可胜任；中大型项目推荐 MVVM 或 ECS 架构 + 事件驱动 + UniTask 异步 + DOTween 动画 + Luban 配置表的组合。核心衡量标准始终是：新成员能否快速理解、功能扩展是否灵活、Bug 定位是否高效。
+
+---
+
+## 程序集定义与自定义 Package
+
+### 程序集定义（Assembly Definition）
+
+默认情况下，Unity 将所有游戏脚本编译到同一个 `Assembly-CSharp.dll` 中。这带来三个问题：
+
++- **增量编译慢**：修改一个脚本触发全部重新编译
++- **无访问控制**：所有脚本可以访问其他脚本的类型，不利于模块化
++- **全平台编译**：所有脚本针对所有平台编译，无法按平台分离
+
+通过 `.asmdef` 文件，可将脚本按模块划分为独立的程序集：
+
+```
+Assets/
+├─ Scripts/
+│  ├─ Core/
+│  │  └─ Game.Core.asmdef        // 核心程序集
+│  ├─ Characters/
+│  │  └─ Game.Characters.asmdef  // 角色程序集
+│  └─ UI/
+│     └─ Game.UI.asmdef          // UI 程序集
+```
+
+**创建方式**：在目标文件夹中右键 → **Create** → **Scripting** → **Assembly Definition**。
+
+**程序集定义引用（`.asmref`）**：当子文件夹需要显式归属到某个已有程序集时使用。创建 `.asmref` 资源并设置其 `Assembly Definition` 属性指向目标 `.asmdef`。
+
+### 程序集引用规则
+
+在 `.asmdef` 的 Inspector 中配置引用关系：
+
++- **Assembly Definition References**：引用其他自定义程序集
++- **Define Constraints**：条件编译符号约束——仅当定义了指定符号时，该引用才生效
++- **Platforms**：按平台勾选，排除不需要的平台编译
+
+Unity 的引用限制：
+
++- 自定义程序集**不能**引用预定义程序集（如 `Assembly-CSharp.dll`）
++- 预定义程序集只能使用**自动引用**（Auto Referenced）中的代码
++- **禁止循环引用**：A 引用 B 且 B 引用 A 会导致编译错误
+
+### 自定义 Package 布局
+
+Unity Package 是代码和资源的独立分发单元。标准布局：
+
+```
+<package-root>/
+  ├── package.json              // 包清单（name、version、dependencies）
+  ├── README.md
+  ├── CHANGELOG.md
+  ├── LICENSE.md
+  ├── Editor/                   // 编辑器专用代码（仅在 Editor 中编译）
+  │   ├── Unity.[Name].Editor.asmdef
+  │   └── EditorExample.cs
+  ├── Runtime/                  // 运行时代码
+  │   ├── Unity.[Name].asmdef
+  │   └── RuntimeExample.cs
+  ├── Tests/
+  │   ├── Editor/
+  │   │   ├── Unity.[Name].Editor.Tests.asmdef
+  │   │   └── EditorExampleTest.cs
+  │   └── Runtime/
+  │       ├── Unity.[Name].Tests.asmdef
+  │       └── RuntimeExampleTest.cs
+  └── Documentation~            // 文档目录（~ 后缀表示元数据目录）
+       └── [Name].md
+```
+
+**`package.json` 清单示例**：
+
+```json
+{
+  "name": "com.example.mypackage",
+  "version": "1.2.3",
+  "displayName": "My Package",
+  "description": "A custom Unity package",
+  "unity": "2021.3",
+  "dependencies": {
+    "com.unity.textmeshpro": "3.0.0"
+  },
+  "keywords": ["example", "utility"],
+  "author": {
+    "name": "Author Name",
+    "email": "author@example.com"
+  }
+}
+```
+
+> [!warning] 包名约束
+> `name` 字段必须**全部小写字母**，使用反向域名格式（如 `com.company.package`），否则 Package Manager 会报错。
+
+### 与项目架构的集成
+
+程序集和 Package 在项目架构中的定位：
+
+| 机制 | 粒度 | 适用场景 |
+|:-----|:-----|:---------|
+| `.asmdef` | 项目内部模块划分 | 隔离 Core/UI/Gameplay 等模块编译 |
+| `.asmref` | 子文件夹归属 | 将零散脚本归入已有程序集 |
+| Custom Package | 跨项目复用 | 通用工具库、框架、编辑器扩展 |
+| UPM Package | 外部依赖管理 | 通过 git URL 或 OpenUPM 引入第三方库 |
+
+> [!tip] 编译时间优化
+> 合理使用 `.asmdef` 可将增量编译时间从几十秒降低到几秒。核心原则：**将不常变动的基础代码与频繁修改的业务代码分离到不同程序集**。

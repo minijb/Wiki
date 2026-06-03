@@ -1,7 +1,14 @@
 ---
 title: 操作系统基础
 updated: 2026-06-02
-tags: [cs, architecture, os, process, memory, synchronization, io]
+tags:
+  - cs
+  - architecture
+  - os
+  - process
+  - memory
+  - synchronization
+  - io
 sources:
   - Operating System(nanjin)-1 简单介绍
   - Operating System(nanjin)-2 硬件和数学视角

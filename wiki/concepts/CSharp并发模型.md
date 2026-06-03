@@ -1,7 +1,7 @@
 ---
 title: "C# 并发模型"
 type: concept
-updated: 2026-05-10
+updated: 2026-06-02
 tags: [csharp, threading, task, async, concurrency, parallel]
 aliases: [CSharp并发模型, C#多线程, .NET并发]
 ---
@@ -89,3 +89,5 @@ CPU 密集型（计算/处理）
 ## 关联页面
 
 - [[sources/csharp-threading-摘要|C# 多线程来源摘要]]
+- [[CSharp异步模型]] — async/await/TAP/ValueTask 深度解析
+- [[CSharp进程管理]] — Process 异步等待与 CancellationToken

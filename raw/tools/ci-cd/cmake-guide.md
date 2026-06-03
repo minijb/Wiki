@@ -370,6 +370,38 @@ configure_file(config.ini ${CMAKE_CURRENT_BINARY_DIR}/config.ini COPYONLY)
 file(COPY config.ini DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 ```
 
+### list 操作
+
+CMake 的 `list()` 命令提供丰富的列表操作：
+
+```cmake
+# 读取
+list(LENGTH myList len)              # 获取长度
+list(GET myList 0 firstElement)      # 按索引取值
+list(JOIN myList "," joined)         # 连接为字符串
+list(SUBLIST myList 0 2 subList)     # 子列表
+
+# 查找
+list(FIND myList "target" idx)       # 返回索引（-1 表示未找到）
+
+# 修改
+list(APPEND myList item1 item2)      # 追加
+list(PREPEND myList item0)           # 前置（CMake 3.15+）
+list(INSERT myList 2 item)           # 在指定位置插入
+list(REMOVE_ITEM myList "item")      # 按值删除
+list(REMOVE_AT myList 3)             # 按索引删除
+list(REMOVE_DUPLICATES myList)       # 去重
+list(REVERSE myList)                 # 反转
+list(SORT myList)                    # 按字母排序
+
+# 过滤（CMake 3.7+）
+list(FILTER myList INCLUDE REGEX "^lib")
+list(FILTER myList EXCLUDE REGEX "_test$")
+```
+
+> 参考：[CMake list 命令官方文档](https://cmake.org/cmake/help/latest/command/list.html)
+
+
 ## 子目录
 
 ```cmake

@@ -57,9 +57,9 @@ Task<std::string> FetchAsync(const std::string& url) {
 
 ### C#: 堆分配与 ValueTask 优化
 
-- **Task<T>**：未完成时堆分配（Task + Delegate + 状态机装箱），完成后可缓存（`Task.CompletedTask`、`Task.FromResult`）
-- **ValueTask<T>**：struct 包装，同步完成时零分配；异步时包装成 Task
-- **IAsyncEnumerable<T>**：流式异步迭代，每次 `yield return` 可 `await`
+- **`Task<T>`**：未完成时堆分配（Task + Delegate + 状态机装箱），完成后可缓存（`Task.CompletedTask`、`Task.FromResult`）
+- **`ValueTask<T>`**：struct 包装，同步完成时零分配；异步时包装成 Task
+- **`IAsyncEnumerable<T>`**：流式异步迭代，每次 `yield return` 可 `await`
 - **SynchronizationContext**：控制 `await` 后回到哪个线程，UI 线程调度零成本
 
 ### C++: 自定义分配器与零开销抽象

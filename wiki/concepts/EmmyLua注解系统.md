@@ -1,7 +1,7 @@
 ---
 title: "EmmyLua 注解系统"
 type: concept
-updated: 2026-05-07
+updated: 2026-06-02
 tags: [lua, emmylua, annotations, type-system, static-typing, luacats]
 ---
 

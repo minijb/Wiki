@@ -1,9 +1,9 @@
 ---
-title: 算法面试通用方法论
+title: "算法面试通用方法论"
+type: source
 updated: 2026-06-02
-tags: [cs, algorithms, interview, patterns, methodology]
-aliases: [面试算法, 算法面试方法论, interview-patterns]
-cssclasses: []
+tags: [cs, algorithms, interview, graph-theory, red-black-tree, linked-list, two-pointers, sliding-window]
+aliases: [面试算法, 算法方法论, 图论, 并查集, A*]
 ---
 
 # 算法面试通用方法论

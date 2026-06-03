@@ -1,9 +1,9 @@
 ---
 title: "EmmyLua 环境安装与配置"
-source_type: tool-setup
+type: source
+updated: 2026-06-02
 tags: [lua, emmylua, luals, ide, rider, vscode, debug]
-created: 2026-05-07
-updated: 2026-05-07
+description: EmmyLua / LuaLS 语言服务器环境搭建：Rider 插件安装、VS Code 插件安装、.emmyrc.json 配置详解（workspace/runtime/diagnostics/completion/strict）、Debug 调试（Attach 模式）、参考资源
 ---
 
 # EmmyLua 环境安装与配置

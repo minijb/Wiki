@@ -1,8 +1,9 @@
 ---
 title: "C# 多线程与并发编程"
 date: 2026-05-10
+updated: 2026-06-02
 tags: [csharp, thread, task, async, concurrency, parallel]
-type: language
+type: source
 aliases: [线程启动, 多线程, 异步编程]
 description: C# 多线程/并发编程演进：Thread → Task → async/await → Channel，含废弃 API 的替代方案
 ---

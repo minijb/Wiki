@@ -1,9 +1,9 @@
 ---
 title: "EmmyLua 注解完全参考"
-source_type: reference
+type: source
+updated: 2026-06-02
 tags: [lua, emmylua, luals, annotations, type-system, luacats]
-created: 2026-05-07
-updated: 2026-05-07
+description: EmmyLua 注解（Annotation）完全参考手册。涵盖约 25 种注解，分 9 组：类型系统（@class/@field/@alias/@type/@enum/@generic）、函数签名（@param/@return/@overload/@vararg）、异步与约束（@async/@nodiscard）、类型操作（@cast/@as）、模块系统（@module/@meta/@package）、运算符（@operator）、代码质量（@deprecated/@diagnostic）、文档与引用（@see/@version/@source）、IDE 辅助（region/language）
 ---
 
 # EmmyLua 注解完全参考

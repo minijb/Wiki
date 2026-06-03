@@ -1,10 +1,10 @@
 ---
 title: "C++ 并发与异步编程"
-date: 2026-06-02
-tags: [cpp, concurrency, thread, async, future, mutex]
-type: language
+type: source
+updated: 2026-06-02
+tags: [cpp, concurrency, thread, async, future, mutex, coroutine]
 aliases: [C++多线程, C++线程, C++并发, C++异步]
-description: C++ 并发编程完整指南：std::thread 创建与管理、mutex/lock_guard/unique_lock 同步原语、condition_variable 条件变量、线程池实现、std::async/future/promise/packaged_task 异步模型
+description: C++ 并发编程完整指南：std::thread 创建与管理、mutex/lock_guard/unique_lock 同步原语、condition_variable 条件变量、线程池实现、std::async/future/promise/packaged_task 异步模型、shared_future 多线程共享结果
 ---
 
 # C++ 并发与异步编程

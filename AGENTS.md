@@ -26,7 +26,8 @@ wiki/                        # Wiki 知识库根目录
 │   │   ├── languages/       # C#, C++, Lua, Python
 │   │   ├── design-patterns/ # GoF, 游戏编程模式
 │   │   ├── architecture/    # SOLID, DDD, ECS, 软件架构
-│   │   └── algorithms/      # 算法与数据结构
+│   │   ├── algorithms/      # 算法与数据结构
+│   │   └── gpgpu/            # GPU 并行计算 (CUDA, OpenCL, Metal)
 │   └── tools/               # 工具操作流程
 │       ├── ai-coding/        # AI 编码代理（PI Agent 扩展生态）
 │       ├── git/             # 版本控制

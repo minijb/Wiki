@@ -1,9 +1,9 @@
 ---
-title: 树结构与字符串算法
+title: "树结构与字符串算法"
+type: source
 updated: 2026-06-02
-tags: [cs, algorithms, binary-tree, segment-tree, string, prefix-sum, stl]
-aliases: [二叉树, 线段树, 字符串哈希, 前缀和, trees-and-strings]
-cssclasses: []
+tags: [cs, algorithms, binary-tree, segment-tree, string-hash, prefix-sum, stl]
+aliases: [二叉树, 线段树, 字符串哈希, 前缀和]
 ---
 
 # 树结构与字符串算法

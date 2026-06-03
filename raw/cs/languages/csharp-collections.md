@@ -3,11 +3,8 @@ title: "C# 集合框架深度解析"
 tags:
   - csharp
   - collections
-  - list
-  - ienumerable
-  - ilist
-type: language
-created: 2026-06-02
+type: source
+updated: 2026-06-02
 source_files:
   - drafts/My_Vault/02_Knowledge/01_Language/常用接口/Tech_Csharp_常用接口_集合接口.md
   - drafts/My_Vault/files/C Sharp List优化 -- table.md
@@ -370,3 +367,79 @@ for (int i = 0; i < list.Count; i++) { Process(list[i]); }
 4. **foreach vs for**：List 上 for 略快（枚举器开销）；编译器对数组做了优化使二者相近
 5. **IReadOnlyList 的意义**：语义上表达只读意图，防止调用方意外修改
 6. **自定义集合**：当默认行为不满足时（如超大列表避免翻倍复制），可重写或使用 ArrayPool
+
+## 12. IDisposable — 释放模式与集合
+
+`IDisposable` 接口为资源管理提供统一的释放约定：
+
+```csharp
+public interface IDisposable
+{
+    void Dispose();
+}
+```
+
+### 12.1 using 语法
+
+```csharp
+// using 声明（C# 8.0+）— 作用域结束时自动 Dispose
+using var stream = new FileStream("data.bin", FileMode.Open);
+// 方法结束时自动调用 stream.Dispose()
+
+// using 语句块 — 块结束时 Dispose
+using (var conn = new SqlConnection(connStr))
+{
+    conn.Open();
+}  // conn.Dispose() 在此调用
+
+// 多个资源 — 逆序释放（b → a）
+using var a = new A();
+using var b = new B();
+```
+
+### 12.2 Dispose(bool) 标准模式
+
+```csharp
+public class ResourceHolder : IDisposable
+{
+    private bool _disposed;
+    private Stream? _managedResource;
+
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (_disposed) return;
+
+        if (disposing)
+        {
+            // 释放托管资源
+            _managedResource?.Dispose();
+            _managedResource = null;
+        }
+
+        // 释放非托管资源（无论 disposing 是 true 还是 false）
+        _disposed = true;
+    }
+
+    ~ResourceHolder()
+    {
+        Dispose(false);  // 析构函数仅释放非托管资源
+    }
+}
+```
+
+### 12.3 集合中的 IDisposable
+
+- `IEnumerator<T>` 继承 `IDisposable` — foreach 自动释放枚举器
+- 当集合持有 `IDisposable` 元素时，集合本身也应实现 `IDisposable` 进行级联释放
+- `ConcurrentBag<T>` / `BlockingCollection<T>` 实现了 `IDisposable`
+
+### 12.4 交叉引用
+
+- [[csharp-memory-gc-摘要|C# 内存与GC]] — Dispose 模式与析构函数的配合
+- [[csharp-serialization-摘要|C# 序列化与IO]] — Stream 与 IDisposable

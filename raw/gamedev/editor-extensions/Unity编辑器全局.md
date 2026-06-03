@@ -213,3 +213,42 @@ private void OnSelectionChanged()
 - [[concepts/Unity自定义Inspector|自定义 Inspector]] — CustomEditor + SerializedProperty
 - [[concepts/Unity编辑器窗口|编辑器窗口]] — EditorWindow / ScriptableWizard
 - [[concepts/Unity Gizmos 调试|Gizmos 调试]] — Gizmos / DrawGizmo / Handles
+
+---
+
+## Destroy 方法辨析
+
+Unity 提供三种销毁方法，行为差异显著：
+
+| 方法 | 行为 | 用途 |
+|:-----|:-----|:-----|
+| `Destroy(obj)` | 将对象放入销毁队列，**当前帧结束时**批量销毁 | 运行时常规销毁，安全且常用 |
+| `DestroyImmediate(obj)` | **立即**销毁对象，不等待帧结束 | 编辑器脚本中使用，运行时禁止 |
+| `Undo.DestroyObjectImmediate(obj)` | 立即销毁**并记录 Undo 操作** | 编辑器工具中需要支持 Ctrl+Z 撤销时 |
+
+```csharp
+// 运行时：使用 Destroy
+void OnTriggerEnter(Collider other)
+{
+    Destroy(other.gameObject); // 帧末销毁，安全
+}
+
+// 编辑器脚本：使用 DestroyImmediate
+[MenuItem("MyTools/Cleanup Selection")]
+static void CleanupSelected()
+{
+    foreach (var go in Selection.gameObjects)
+    {
+        DestroyImmediate(go); // 编辑器下立即生效
+    }
+}
+
+// 编辑器工具需要 Undo 支持
+static void RemoveWithUndo(GameObject go)
+{
+    Undo.DestroyObjectImmediate(go); // 可撤销的销毁
+}
+```
+
+> [!danger] DestroyImmediate 运行时风险
+> 运行时调用 `DestroyImmediate` 会绕过正常的生命周期管线，可能导致：依赖该对象的其他组件引用失效、协程中断、事件回调丢失。**仅在 Editor 脚本中使用**。

@@ -1,9 +1,9 @@
 ---
-title: 动态规划与回溯算法
+title: "动态规划与回溯算法"
+type: source
 updated: 2026-06-02
-tags: [cs, algorithms, dynamic-programming, backtracking, greedy, knapsack]
-aliases: [DP, 动态规划, 回溯算法, 背包问题, dp-and-backtracking]
-cssclasses: []
+tags: [cs, algorithms, dynamic-programming, backtracking, greedy, knapsack, binary-grouping]
+aliases: [DP, 动态规划, 回溯算法, 背包问题]
 ---
 
 # 动态规划与回溯算法

@@ -1,10 +1,10 @@
 ---
 title: "C++ 核心语法"
-date: 2026-06-02
-tags: [cpp, stl, move-semantics, memory, smart-pointers]
-type: language
+type: source
+updated: 2026-06-02
+tags: [cpp, stl, move-semantics, memory, smart-pointers, hash, value-categories]
 aliases: [C++语法, C++核心, C++ STL]
-description: C++ 核心语法速查：移动语义、完美转发、STL 容器与适配器、哈希自定义、智能指针、内存模型、虚表与对象布局、类型转换、编译过程
+description: C++ 核心语法速查：移动语义与右值引用、完美转发（std::forward）、STL 容器与适配器全景、哈希自定义（std::hash 特化/函数对象）、智能指针（unique/shared/weak）、内存分区与分配器、虚表与对象布局、类型转换、编译过程
 ---
 
 # C++ 核心语法

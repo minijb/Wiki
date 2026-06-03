@@ -6,14 +6,30 @@ tags:
   - task
   - awaiter
   - statemachine
-type: language
-created: 2026-06-02
+type: source
+updated: 2026-06-02
 source_files:
   - drafts/My_Vault/02_Knowledge/异步+多线程/
-  - drafts/My_Vault/files/C Sharp 异步以及Awaiter.md
-  - drafts/My_Vault/files/面试 - 多线程 task.md
-  - drafts/My_Vault/files/面试实录 -- Csharp.md
+  - drafts/My_Vault/02_Knowledge/01_Language/Csharp_tools/Thread/
+  - drafts/My_Vault/02_Knowledge/01_Language/Csharp_tools/Process/
+  - drafts/My_Vault/02_Knowledge/01_Language/常用工具/00_CSharp_进程.md
 ---
+
+## 0. 演进全景
+
+C# 并发/异步编程的演进路径：
+
+```
+Thread (手动控制, .NET 1.0)
+  → ThreadPool (线程复用, .NET 1.0)
+    → Task (线程池抽象, .NET 4.0)
+      → async/await (语言级异步, C# 5.0)
+        → ValueTask (零分配异步, C# 7.0)
+          → IAsyncEnumerable<T> (异步流, C# 8.0)
+            → Channel<T> (生产者-消费者管道, .NET Core 3.0)
+```
+
+核心哲学：**协作式取消替代暴力终止**；**I/O 异步不占用线程**；**库代码用 ConfigureAwait(false)**。
 
 # C# 异步模型深度解析
 
@@ -487,8 +503,220 @@ button.Click += async (s, e) => await OnClickAsync();
 
 ---
 
-## 9. I/O 绑定 vs CPU 绑定
+## 9. TAP 进度报告：IProgress\<T\>
 
+TAP 通过 `IProgress<T>` 接口实现异步操作的进度通知，避免回调耦合：
+
+```csharp
+public interface IProgress<in T>
+{
+    void Report(T value);
+}
+```
+
+默认实现 `Progress<T>` 会自动捕获 `SynchronizationContext`，将 `Report` 回调调度到创建它的线程（通常是 UI 线程）：
+
+```csharp
+public async Task ProcessFilesAsync(
+    string[] files, IProgress<int>? progress = null)
+{
+    for (int i = 0; i < files.Length; i++)
+    {
+        await ProcessFileAsync(files[i]);
+        progress?.Report((i + 1) * 100 / files.Length);  // 百分比
+    }
+}
+
+// UI 调用
+var progress = new Progress<int>(pct =>
+    progressBar.Value = pct);  // 自动回到 UI 线程更新
+await ProcessFilesAsync(files, progress);
+```
+
+---
+
+## 10. IAsyncEnumerable\<T\> 与异步流 (C# 8.0+)
+
+`IAsyncEnumerable<T>` 支持 `await foreach` 语法，将异步数据流以迭代器方式消费：
+
+```csharp
+// 生产者：yield return 配合 await
+public async IAsyncEnumerable<string> ReadLinesAsync(
+    string path,
+    [EnumeratorCancellation] CancellationToken token = default)
+{
+    using var reader = new StreamReader(path);
+    while (!reader.EndOfStream)
+    {
+        token.ThrowIfCancellationRequested();
+        yield return await reader.ReadLineAsync();
+    }
+}
+
+// 消费者：await foreach
+await foreach (var line in ReadLinesAsync("large.log", token))
+{
+    Console.WriteLine(line);
+}
+
+// 配合 System.Linq.Async 进行 LINQ 操作
+await foreach (var item in source
+    .WhereAwait(async x => await FilterAsync(x))
+    .SelectAwait(async x => await TransformAsync(x)))
+{
+    Process(item);
+}
+```
+
+> [!note] CancellationToken with IAsyncEnumerable
+> 使用 `[EnumeratorCancellation]` 特性标记 token 参数，编译器自动将其绑定到 `await foreach` 的 `WithCancellation()` 调用。
+
+---
+
+## 11. ValueTask 池化 (PoolingAsyncValueTaskMethodBuilder)
+
+.NET 6+ 引入了 `PoolingAsyncValueTaskMethodBuilder`，`ValueTask` 异步方法的状态机可从对象池租用，进一步减少分配：
+
+```csharp
+// 标记为使用池化状态机
+[AsyncMethodBuilder(typeof(PoolingAsyncValueTaskMethodBuilder))]
+public async ValueTask<int> GetValueAsync()
+{
+    await Task.Delay(100);
+    return 42;
+}
+
+// 或通过项目文件全局启用
+// <PoolingAsyncValueTaskMethodBuilder>true</PoolingAsyncValueTaskMethodBuilder>
+```
+
+适用条件：
+- 方法返回 `ValueTask` 或 `ValueTask<T>`
+- 方法不会在多个线程上并发执行 `MoveNext`
+- 高频调用场景收益最大
+
+---
+
+## 12. Process 进程管理
+
+`System.Diagnostics.Process` 用于启动和管理外部进程，实现 `IDisposable`：
+
+### 12.1 两种启动方式
+
+```csharp
+// 方式1：静态便捷方法
+Process.Start("notepad.exe");
+Process.Start("notepad.exe", "file.txt");
+
+// 方式2：ProcessStartInfo 精细控制（推荐）
+using var process = new Process
+{
+    StartInfo = new ProcessStartInfo
+    {
+        FileName = "python",
+        Arguments = "script.py --verbose",
+        UseShellExecute = false,          // 重定向流必须 false
+        RedirectStandardOutput = true,
+        RedirectStandardError = true,
+        CreateNoWindow = true,
+        WorkingDirectory = "/path/to/work"
+    }
+};
+process.Start();
+```
+
+### 12.2 ProcessStartInfo 关键属性
+
+| 属性 | 说明 |
+|------|------|
+| `FileName` | 可执行文件路径或文档 |
+| `Arguments` | 命令行参数 |
+| `UseShellExecute` | 是否用 OS Shell 启动；**与 `RedirectStandard*` 互斥** |
+| `CreateNoWindow` | 不显示新窗口（仅 Windows） |
+| `WorkingDirectory` | 工作目录 |
+| `RedirectStandardOutput/Error/Input` | 重定向标准流 |
+| `StandardOutputEncoding/ErrorEncoding` | 流编码 |
+| `Environment` | 环境变量字典 |
+
+### 12.3 异步等待与超时
+
+```csharp
+using var process = new Process { StartInfo = startInfo };
+process.Start();
+
+// 并发读取 stdout/stderr（防止缓冲区满死锁）
+var outputTask = process.StandardOutput.ReadToEndAsync();
+var errorTask = process.StandardError.ReadToEndAsync();
+
+// 带超时的异步等待
+using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(2));
+try
+{
+    await process.WaitForExitAsync(cts.Token);
+}
+catch (OperationCanceledException)
+{
+    process.Kill(entireProcessTree: true);  // .NET 6+
+    throw new TimeoutException("进程执行超时");
+}
+
+var output = await outputTask;
+var error = await errorTask;
+```
+
+> [!warning] Token 取消不会自动杀进程
+> `CancellationToken` 被取消只停止等待，**必须显式调用 `process.Kill()`**。
+
+### 12.4 输出重定向死锁
+
+stdout 和 stderr 各有约 4KB 缓冲区。**必须并发读取**，否则子进程写满一个缓冲区后阻塞，父进程在等待另一个流 → 死锁。
+
+```csharp
+// ❌ 错误：顺序读取
+var output = process.StandardOutput.ReadToEndAsync();
+var error = process.StandardError.ReadToEndAsync();  // 可能永远等不到！
+await process.WaitForExitAsync();
+
+// ✅ 正确：并发读取
+var outputTask = process.StandardOutput.ReadToEndAsync();
+var errorTask = process.StandardError.ReadToEndAsync();
+await process.WaitForExitAsync(token);
+```
+
+### 12.5 运行 Python 脚本
+
+```csharp
+public static async Task<string> RunPythonAsync(
+    string scriptPath, string args)
+{
+    var startInfo = new ProcessStartInfo
+    {
+        FileName = "python",
+        Arguments = $"{scriptPath} {args}",
+        UseShellExecute = false,
+        RedirectStandardOutput = true,
+        RedirectStandardError = true,
+        WorkingDirectory = Path.GetDirectoryName(scriptPath)
+    };
+
+    using var process = new Process { StartInfo = startInfo };
+    process.Start();
+
+    var outputTask = process.StandardOutput.ReadToEndAsync();
+    var errorTask = process.StandardError.ReadToEndAsync();
+    await process.WaitForExitAsync();
+
+    if (process.ExitCode != 0)
+        throw new InvalidOperationException(
+            $"Python failed: {await errorTask}");
+
+    return await outputTask;
+}
+```
+
+---
+
+## 13. I/O 绑定 vs CPU 绑定
 | 维度 | I/O 绑定 | CPU 绑定 |
 |------|----------|----------|
 | 典型场景 | 网络请求、数据库查询、文件读写 | 复杂计算、图像处理 |

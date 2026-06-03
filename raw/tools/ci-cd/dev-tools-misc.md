@@ -350,6 +350,60 @@ xmake
 xmake run
 ```
 
+## 静态博客工具
+
+### 常见静态博客框架
+
+| 框架 | 语言 | 特点 |
+|------|------|------|
+| **Docsify** | JavaScript | 运行时渲染 Markdown，无需预构建 HTML，适合文档站 |
+| **Hugo** | Go | 构建速度极快，主题丰富 |
+| **Hexo** | Node.js | 插件生态丰富，中文社区活跃 |
+| **VuePress** | Vue.js | Vue 驱动的静态站点生成器 |
+| **GitBook** | Node.js | 从 Git 仓库自动生成文档 |
+| **Jekyll** | Ruby | GitHub Pages 原生支持 |
+| **Pelican** | Python | Python 博客生成器 |
+| **WordPress** | PHP | 动态 CMS（非静态） |
+
+### Docsify 快速上手
+
+Docsify 无需预构建 HTML，在浏览器中动态渲染 Markdown：
+
+```bash
+# 全局安装
+npm install -g docsify-cli
+
+# 初始化项目
+docsify init ./docs
+
+# 本地预览
+docsify serve ./docs
+```
+
+参考：[Docsify 官网](https://docsify.js.org/)、[教学视频](https://www.bilibili.com/video/BV14U4y1x7jH/)
+
+## 多端同步工具
+
+### Syncthing
+
+开源跨平台文件夹同步工具，支持 Windows / macOS / Linux：
+
+- **Windows / macOS / Linux**：使用 [Syncthing](https://syncthing.net/) 官方客户端
+- **iOS**：使用 **Mobius Sync**（收费）获得 Syncthing 兼容同步
+- **备选方案**：Resilio Sync（闭源，P2P 同步）
+
+### 典型用法
+
+在多设备间同步 Obsidian 笔记库：
+1. 各设备安装 Syncthing
+2. 将 Obsidian Vault 文件夹添加为共享文件夹
+3. 其他设备接受共享请求
+4. 自动实时同步，无中心服务器
+
+> [!note] Syncthing 优势
+> 端到端加密、P2P 传输（不经过第三方服务器）、开源免费、支持文件版本历史。
+
+
 ## SVN 版本控制基础
 
 SVN（Apache Subversion）— 集中式版本控制系统。
@@ -442,6 +496,60 @@ graph TD
 ````
 
 支持的图表类型：流程图（graph）、时序图（sequenceDiagram）、类图（classDiagram）、状态图（stateDiagram）、甘特图（gantt）。
+
+### 嵌入内容
+
+Obsidian 支持多种嵌入方式：
+
+**文件嵌入**：`![[filename]]` 支持格式包括：
+- Markdown 文件：`.md`
+- 图像文件：`.png`、`.jpg`、`.jpeg`、`.gif`、`.bmp`、`.svg`
+- 音频文件：`.mp3`、`.webm`、`.wav`、`.m4a`、`.ogg`、`.3gp`、`.flac`
+- 视频文件：`.mp4`、`.webm`、`.ogv`
+- PDF 文件：`.pdf`
+
+**网页嵌入**（iframe）：
+```html
+<iframe src="https://www.bilibili.com/"></iframe>
+```
+
+可添加属性控制尺寸：`<iframe border=0 frameborder=0 height=250 width=550 src="..."></iframe>`
+
+**调整大小**：Markdown 风格 `![AltText|100x100](url)` 或 Wikilink 风格 `![[image.png|100x100]]`。
+
+### 笔记别名
+
+在 frontmatter 中添加 `aliases: [别名1, 别名2]` 实现多名称引用。
+
+### 自用插件清单
+
+**编辑增强**：
+- Advanced Table — 便捷表格编辑
+- Admonitions — 增强型提示块（支持 note/abstract/info/tip/success/question/warning/failure/danger/bug/example/quote 类型）
+- Breadcrumb — 笔记前后关系导航
+- Editing Toolbar — 编辑按钮栏
+- Emoji Toolbar — 表情选择菜单 😀
+- Excalidraw — 画图软件
+- Footnote Shortcut — 快速添加脚注
+- Kanban — Markdown 看板（计划与项目总览）
+- LaTeX Suite — LaTeX 快捷键
+- QuickAdd — 模板与自动化操作
+- Templater — 模板引擎（支持变量和 JS 函数）
+- ToggleList — 快速切换选项状态
+
+**视觉增强**：
+- Execute Code — 阅读模式运行代码（需配置环境）
+- Editor Syntax Highlight — 编辑模式代码高亮
+- Image Toolkit — 图片预览增强
+- Linter — 格式化插件
+- Image in Editor — 调整图片大小
+
+**查找管理**：
+- Metadata Menu — 定制化元数据管理，按 class 分类
+- Remote Save — 非官方远程存储
+- Tag Wrangler — 标签重命名/合并/搜索
+
+**主题**：Blue Topaz
 
 ### 笔记系统最佳实践
 

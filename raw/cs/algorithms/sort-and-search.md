@@ -1,9 +1,9 @@
 ---
-title: 排序与搜索算法
+title: "排序与搜索算法"
+type: source
 updated: 2026-06-02
-tags: [cs, algorithms, sorting, searching, monotonic-stack, priority-queue]
-aliases: [排序算法, 二分查找, 单调栈, 优先队列, sort-and-search]
-cssclasses: []
+tags: [cs, algorithms, sorting, binary-search, monotonic-stack, priority-queue, heap]
+aliases: [排序算法, 二分查找, 单调栈, 优先队列]
 ---
 
 # 排序与搜索算法

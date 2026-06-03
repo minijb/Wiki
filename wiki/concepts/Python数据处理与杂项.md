@@ -10,9 +10,8 @@ aliases: [Python图像处理, Python性能检测, MySQL基础]
 
 Python 生态中与数据打交道的工具链：性能检测、图像处理库互转、以及 MySQL/JavaScript 等跨语言基础。
 
-> [!note] 已有专项页面
-> - [[Python文件IO模型|Python 文件 I/O 模型]] — pathlib / shutil / os 分层架构与安全实践
-> - [[Python子进程管理|Python 子进程管理]] — subprocess 接口分层、命令注入防护、管道死锁
+> [!note] 文件操作与子进程管理
+> Python 文件操作（`shutil` / `os` / `pathlib`）和子进程管理（`subprocess.run` / `Popen`）已拆分到专项页面 [[Python文件IO模型|Python 文件 I/O 模型]] 和 [[Python子进程管理|Python 子进程管理]]。
 
 ## Python 性能检测
 
@@ -243,6 +242,7 @@ Falsy 值：`""`、`0`、`null`、`undefined`、`NaN`。其余均为 truthy。
 
 ## 交叉引用
 
+- [[sources/python-data-misc-摘要|Python 数据处理 — 来源摘要]]
 - [[Python文件IO模型|Python 文件 I/O 模型]] — pathlib / os / shutil 完整 API
 - [[Python子进程管理|Python 子进程管理]] — subprocess 安全模型
 - [[CSharp文件IO|C# 文件 I/O]] — 跨语言对比

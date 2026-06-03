@@ -1,13 +1,38 @@
 ---
 title: "Wiki 日志"
 type: log
-updated: 2026-05-11
+updated: 2026-06-02
 ---
 
 # Wiki 日志
 
 按时间倒序记录所有 Wiki 操作。只追加，不修改历史。
 
+
+## [2026-06-02] refine-v2 | Draft Refine v2 — 深度重处理 My_Vault 笔记，6 领域并行
+- 策略：保留优先 + 网络搜索验证扩展。跳过逐条讨论，subagent 自主判断
+- Task 1 (C#/.NET): 8 raw + 7 concepts + 8 source summaries — 异步/GC/集合/序列化/Socket/委托/DI/多线程全面扩展
+- Task 2 (C++/Lua/Python/CUDA): 12 raw + wiki pages — 新建 `raw/cs/gpgpu/` 领域，EmmyLua 25 种注解完整保留
+- Task 3 (设计模式): 3 raw + 6 wiki pages — 22 种模式各含 UML mermaid + C# 示例 + 变体 + 反模式
+- Task 4 (渲染): 5 raw + 10 wiki pages — Shader/管线/光线追踪/OpenGL 交叉引用完备
+- Task 5 (Unity 核心): 7 raw + wiki pages — ECS/XLua/FMOD-LipSync/luban 等 15+ 子领域
+- Task 6 (工具/环境): 3 raw + wiki pages — 新建 `raw/tools/ai-coding/ai-coding-tools.md`，Claude Code 7 篇系统化
+- 全局: 更新 AGENTS.md（新增 `raw/cs/gpgpu/`），更新 index.md（新增 AI 编程工具/luban 条目）
+## [2026-06-03] fix | 修复迁移审计 6 项问题
+- P0 luban: 新建 [[concepts/luban配置工具]] + [[sources/luban-config-摘要]]，修复断链
+- P2 面试: 新建 [[concepts/面试常见问题]]（1083 行，C#/Unity/Lua/C++/算法/OS/设计模式/渲染/帧同步），tags 含 面试
+- P2 归档: 8 个个人面试经历文件归档至 `raw/_archived-vault/interview-experiences/`
+- P3 清理: 删除根目录残留空文件 `concepts/Unity自定义Inspector.md` 和 `concepts/Unity编辑器窗口.md`
+- P5 misc: 新建 `raw/_archived-vault/misc/`，迁移 00_Inbox/（7 文件）和 04_Career/（2 文件）
+- P6 交叉引用: 面试页交叉引用 22 个概念页
+- 更新 index.md（面试条目 + luban 条目确认）
+## [2026-06-03] lint | 检查 129 页面，发现 4 断链（已修复）、4 零入链页面、0 矛盾、0 陈旧页面、11 领域结构提示
+- 断链修复：`bepuphysics1int`/`DotRecast` 外部库名改回纯文本；Python 页面自引 Heading 锚点已删除
+- 零入链修复：Python 概念↔摘要双向链接恢复；comparisons 页面从 CSharp异步模型 添加回链
+- 陈旧检测：所有 129 页面 updated ≤27 天，最早 2026-05-07（3 页面）
+- 矛盾检测：5 大主题集群（C# Async/GC/Unity/Lua/DesignPatterns）定义一致，无矛盾
+- 领域结构：`raw/_archived-vault/` 未在 AGENTS.md 声明（9 子目录，深度 3-4），5 个空目录（`.gitkeep`），11 个 <3 文件子域（已记录，非阻断）
+- raw/ 文件命名：`editor-extensions/` 含中文文件名，`cs/languages/` 含中文+驼峰混合文件名（由人类策展，已记录）
 ## [2026-05-11] lint | 检查 32 页面，发现 5 交叉引用缺口、1 领域结构问题
 
 ## [2026-05-11] refine+ingest | Unity 编辑器扩展系列（6 drafts → 6 raw + 12 wiki pages）

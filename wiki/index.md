@@ -1,7 +1,7 @@
 ---
 title: "Wiki 索引"
 type: index
-updated: 2026-06-02
+updated: 2026-06-03
 ---
 
 # Wiki 索引
@@ -27,6 +27,9 @@ updated: 2026-06-02
 - [[concepts/C++核心语法|C++ 核心语法]] — 移动语义、STL 容器、哈希自定义、值类别
 - [[concepts/C++并发与异步|C++ 并发与异步]] — std::thread/future/async、原子操作、协程
 - [[concepts/现代CMake构建|现代 CMake 构建]] — target-based 设计、变量作用域、vcpkg 集成
+
+### GPU / CUDA
+- [[concepts/CUDA并行计算|CUDA 并行计算]] — GPU 硬件架构、SIMT/Warp、内存模型、编程基础
 
 ### Lua / EmmyLua
 - [[concepts/Lua核心特性|Lua 核心特性]] — table 实现、闭包/UpValue、元表、协程、值传递
@@ -78,6 +81,10 @@ updated: 2026-06-02
 - [[concepts/Unity编辑器全局设置|Unity 编辑器全局设置]] — Editor 文件夹、MenuItem、ContextMenu、Selection
 - [[concepts/Unity常用API速查|Unity 常用 API 速查]] — UI 组件/序列化/Input/Transform/常见模式的速查表
 - [[concepts/Unity平台交互与日志|Unity 平台交互与日志]] — Android/iOS 互调、日志系统、平台适配
+- [[concepts/luban配置工具|luban 配置工具]] — 游戏配置表方案：安装、运行时加载、数据类型、XLua 集成
+
+### 面试
+- [[concepts/面试常见问题|面试常见问题]] — C#/Unity/Lua/C++/算法/OS/设计模式/渲染/帧同步 技术面试 Q&A 合集
 
 ### 开发工具
 - [[concepts/Git操作完全指南|Git 操作完全指南]] — 分支/合并/变基/储藏/子模块/标签/撤销/bisect
@@ -85,6 +92,8 @@ updated: 2026-06-02
 - [[concepts/Linux Shell环境|Linux Shell 环境]] — Bash/Fish/Zsh、tmux、Neovim、lazygit/fzf/rg/fd
 - [[concepts/WSL2与Windows开发环境|WSL2 与 Windows 开发环境]] — WSL2 配置/迁移/.wslconfig、Scoop、AI 环境
 - [[concepts/Dev工具集|Dev 工具集]] — Docker、Protobuf3、dotnet CLI、SVN、Obsidian、xmake
+- [[concepts/Shell脚本编程|Shell 脚本编程]] — 命令过滤器、父子关系、环境变量、进程管理、权限安全
+- [[concepts/AI编程工具|AI 编程工具]] — Claude Code MCP/Agents/Skills/记忆系统，PI Agent 扩展生态
 
 ## Entities
 
@@ -110,6 +119,9 @@ updated: 2026-06-02
 - [[sources/cpp-core-syntax-摘要|C++ 核心语法]] — 移动语义、STL、哈希、值类别
 - [[sources/cpp-concurrency-摘要|C++ 并发]] — thread/future/async/协程
 - [[sources/cmake-guide-摘要|CMake 构建指南]] — 现代 CMake、vcpkg 集成
+
+### GPU / CUDA
+- [[sources/cuda-basics-摘要|CUDA 基础]] — GPU 架构、内存模型、cudaMalloc/cudaMemcpy
 
 ### Lua
 - [[sources/lua-core-摘要|Lua 核心]] — table、闭包/UpValue、元表、协程
@@ -162,6 +174,7 @@ updated: 2026-06-02
 - [[sources/Unity动画与Spine-摘要|Unity 动画与 Spine]]
 - [[sources/Unity常用API速查表-摘要|Unity 常用 API 速查]]
 - [[sources/Unity平台交互与日志-摘要|Unity 平台交互与日志]]
+- [[sources/luban-config-摘要|luban 配置工具]] — 游戏配置表系统的安装、加载与集成
 
 ### 开发工具
 - [[sources/git-operations-guide-摘要|Git 操作指南]]
@@ -169,6 +182,8 @@ updated: 2026-06-02
 - [[sources/linux-shell-guide-摘要|Linux Shell 环境]]
 - [[sources/wsl-windows-dev-setup-摘要|WSL2 Windows 环境]]
 - [[sources/dev-tools-misc-摘要|Dev 工具集]]
+- [[sources/shell-scripting-摘要|Shell 脚本编程]] — 命令过滤器、进程管理、环境变量、权限安全
+- [[sources/ai-coding-tools-摘要|AI 编程工具]] — Claude Code + PI Agent 全栈 AI 编码指南
 - [[sources/PI-Agent-扩展插件-摘要|PI Agent 扩展插件]]
 
 ## Comparisons

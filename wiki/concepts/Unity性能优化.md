@@ -207,3 +207,6 @@ Unity 使用 Boehm-Demers-Weiser GC（非 .NET 的分代 GC）：
 - [[concepts/CSharp内存GC|C# 内存与 GC]] — 分代 GC、装箱、Dispose 模式
 - [[concepts/CSharp值类型性能|C# 值类型性能]] — struct 装箱消除、ref struct、Span
 - [[concepts/Unity编辑器特性速查|Unity 编辑器特性]] — 编辑器相关优化属性
+- [[Unity Shader基础]] — ShaderLab 基础与批处理机制
+- [[Shader高级特性]] — 渲染路径、阴影与性能选择
+- [[concepts/面试常见问题|面试常见问题 — Unity]] — Unity 技术面试 Q&A（生命周期/协程/DrawCall/批处理/LOD/四元数）

@@ -4,10 +4,8 @@ tags:
   - csharp
   - socket
   - network
-  - tcp
-  - async
-type: language
-created: 2026-06-02
+type: source
+updated: 2026-06-02
 source_files:
   - drafts/My_Vault/files/C sharp socket recieve and beginReceive.md
   - drafts/My_Vault/files/Unity Socket - 1.md
@@ -405,3 +403,9 @@ public class NetworkManager : MonoBehaviour
 4. **同步 vs 异步**：同步阻塞线程；BeginReceive 基于回调；SocketAsyncEventArgs 零分配；推荐 ReceiveAsync(TAP)
 5. **recv=0 的含义**：对方优雅关闭了连接（发送了 FIN）
 6. **自定义协议**：序列化消息 → 加长度前缀 → 发送；接收时按长度循环读到完整消息
+
+## 9. 交叉引用
+
+- [[csharp-async-awaiter-摘要|C# 异步模型]] — Socket 的 TAP 模式（ReceiveAsync）与 CancellationToken 取消
+- [[csharp-serialization-摘要|C# 序列化与IO]] — NetworkStream 与自定义协议消息的序列化
+- [[Unity-Socket网络编程]] — Unity 端 Socket 实践与粘包处理方案

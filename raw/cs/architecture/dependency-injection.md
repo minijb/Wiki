@@ -6,8 +6,8 @@ tags:
   - di
   - ioc
   - design-patterns
-  - architecture
-type: architecture
+type: source
+updated: 2026-06-02
 created: 2026-06-02
 source_files:
   - drafts/My_Vault/02_Knowledge/依赖注入/00_依赖注入_背景.md
@@ -427,6 +427,32 @@ container.Register<IPaymentProcessor, BitcoinProcessor>();
 
 ---
 
+
+### 5.4 键控服务（Keyed Services, .NET 8+）
+
+`[FromKeyedServices]` 特性允许按名称解析同一接口的不同实现：
+
+```csharp
+// 注册
+builder.Services.AddKeyedSingleton<ICache, MemoryCache>("local");
+builder.Services.AddKeyedSingleton<ICache, RedisCache>("distributed");
+
+// 消费
+public class ReportService(
+    [FromKeyedServices("local")] ICache localCache,
+    [FromKeyedServices("distributed")] ICache distributedCache)
+{
+    // localCache → MemoryCache 实例
+    // distributedCache → RedisCache 实例
+}
+
+// 也可通过 IServiceProvider 动态解析
+var cache = provider.GetKeyedService<ICache>("local");
+```
+
+适用场景：同一接口多种实现需要在同一作用域共存（如缓存策略、支付网关、通知渠道）。
+
+---
 ## 6. 实际应用场景
 
 ### 6.1 ASP.NET Core 内置 DI

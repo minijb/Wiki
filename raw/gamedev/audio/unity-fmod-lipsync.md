@@ -908,3 +908,143 @@ else
 - 置信度阈值 `0.22f` 和 EMA 系数可根据识别效果微调
 - 滤波器大小 `FILTER_SIZE=7` 和方差 `FILTER_DEVIATION_SQUARE=5.0` 影响平滑程度
 - `PowOfAEIOU=1.2` 用于增强能量法中各元音间的差异
+
+---
+
+## FMOD DSP 数字信号处理
+
+### DSP 概述
+
+DSP（Digital Signal Processor）是 FMOD 的数字信号处理工具，可直接操作音频数据。常见用途包括：
+
++- **频谱分析**（FFT）：获取实时频率数据，用于音频可视化、LipSync 唇形同步
++- **音效处理**：混响（Reverb）、回声（Echo）、滤波（Low-Pass/High-Pass）、压缩（Compressor）
++- **实时监控**：挂载到 ChannelGroup 上监听音频信号
+
+DSP 通过 `ChannelGroup` 挂载到音频链路中，可以附着在任何 Event、Bus 或 Channel 上，进行声音处理或监视。
+
+### 创建与销毁 DSP
+
+DSP 的生命周期管理遵循严格的创建、挂载、使用、卸载、释放流程：
+
+```csharp
+private DSP _dsp;
+private DSP_PARAMETER_FFT _fftParam = default;
+private ChannelGroup _channelGroup = default;
+
+// 创建 DSP 并附加到 EventInstance 上
+private DSP CreateDSP(EventInstance eventInstance)
+{
+    DSP dsp;
+    FMOD.RESULT result;
+
+    // 1. 创建 DSP 实例（以 FFT 为例）
+    result = FMODUnity.RuntimeManager.CoreSystem.createDSPByType(
+        FMOD.DSP_TYPE.FFT, out dsp);
+    if (result != FMOD.RESULT.OK)
+        ReportError("Create DSP failed");
+
+    // 2. 配置 FFT 参数
+    dsp.setParameterInt((int)FMOD.DSP_FFT.WINDOW, (int)WINDOW_TYPE);
+    dsp.setParameterInt((int)FMOD.DSP_FFT.WINDOWSIZE, WINDOW_SIZE * 2);
+
+    // 3. 刷新 FMOD 命令队列使参数生效
+    FMODUnity.RuntimeManager.StudioSystem.flushCommands();
+
+    // 4. 获取 EventInstance 的 ChannelGroup
+    result = eventInstance.getChannelGroup(out ChannelGroup channelGroup);
+    if (result != FMOD.RESULT.OK)
+        ReportError("Get ChannelGroup failed");
+    _channelGroup = channelGroup;
+
+    // 5. 将 DSP 挂载到 ChannelGroup 头部
+    result = channelGroup.addDSP(FMOD.CHANNELCONTROL_DSP_INDEX.HEAD, dsp);
+    if (result != FMOD.RESULT.OK)
+        ReportError("Add DSP failed");
+
+    return dsp;
+}
+// 清理 DSP
+private void ClearDSP()
+{
+    // 1. 从 ChannelGroup 移除 DSP
+    _channelGroup.removeDSP(_dsp);
+    // 2. 释放 DSP 资源
+    FMOD.RESULT result = _dsp.release();
+    if (result != FMOD.RESULT.OK)
+        ReportError("Release DSP failed");
+    _dsp = default;
+    _channelGroup = default;
+}
+```
+
+> [!important] 清理顺序
+> DSP 释放前**必须先**从 ChannelGroup 上移除（`removeDSP`），然后调用 `release()`。直接 `release()` 而不先移除可能导致句柄无效或内存泄漏。
+
+> [!note] `flushCommands()` 的必要性
+> FMOD Studio API 使用命令队列机制，`setParameterInt` 等调用不会立即生效，而是进入队列等待批量执行。在获取 DSP 数据前调用 `flushCommands()` 确保所有配置已应用到 DSP 实例。
+
+### 获取频谱数据（FFT）
+
+FFT DSP 提供实时的频谱分析能力，是 LipSync 唇形同步的核心数据源：
+
+```csharp
+private void GetSpectrumData()
+{
+    if (!_dsp.hasHandle()) return;
+
+    System.IntPtr _data;
+    uint _length;
+
+    // 从 DSP 获取 FFT 频谱数据
+    if (_dsp.getParameterData((int)FMOD.DSP_FFT.SPECTRUMDATA,
+            out _data, out _length) != FMOD.RESULT.OK) return;
+
+    // 将原生内存数据转换为 C# 结构体
+    _fftParam = (FMOD.DSP_PARAMETER_FFT)Marshal.PtrToStructure(
+        _data, typeof(DSP_PARAMETER_FFT));
+
+    // 提取指定通道的频谱数据
+    if (_fftParam.numchannels > 0)
+    {
+        _fftParam.getSpectrum(0, ref _spectrum);
+    }
+}
+```
+
+`DSP_PARAMETER_FFT.SPECTRUMDATA` 结构包含：
+
+| 字段 | 说明 |
+|:-----|:-----|
+| `numchannels` | 音频通道数（单声道=1，立体声=2） |
+| `length` | 频谱数组长度（= `WINDOWSIZE / 2`） |
+| `getSpectrum(channel, ref array)` | 获取指定通道的频谱幅值数组 |
+
+**FFT 参数选择**：
+
++- **Window Type**：窗函数类型（Hanning、Hamming、Blackman 等），影响频谱泄漏和频率分辨率
++- **Window Size**：窗口大小（通常为 2 的幂次：256/512/1024/2048）。更大窗口提升频率分辨率但降低时间分辨率。API 传入的是半窗口大小，实际大小为 `value * 2`
+
+### 常见 DSP 类型
+
+FMOD Core API 提供了丰富的内置 DSP 类型：
+
+| DSP 类型 | 常量 | 用途 |
+|:---------|:-----|:-----|
+| FFT | `DSP_TYPE.FFT` | 快速傅里叶变换，频谱分析 |
+| 混响 | `DSP_TYPE.SFXREVERB` | 空间混响效果 |
+| 低通滤波 | `DSP_TYPE.LOWPASS` | 移除高频（水下/隔墙音效） |
+| 高通滤波 | `DSP_TYPE.HIGHPASS` | 移除低频 |
+| 回声 | `DSP_TYPE.ECHO` | 回声/延迟效果 |
+| 压缩器 | `DSP_TYPE.COMPRESSOR` | 动态范围压缩 |
+| 参数均衡器 | `DSP_TYPE.PARAMEQ` | 可调频段 EQ |
+| 音高变换 | `DSP_TYPE.PITCHSHIFT` | 改变音高（不改变速度） |
+| 声道平移 | `DSP_TYPE.PAN` | 立体声/环绕声声道控制 |
+
+### DSP 挂载位置
+
+DSP 挂载到 ChannelGroup 时可指定插入位置：
+
++- `FMOD.CHANNELCONTROL_DSP_INDEX.HEAD`：在所有现有 DSP 之前（原始信号最先经过此 DSP）
++- `FMOD.CHANNELCONTROL_DSP_INDEX.TAIL`：在所有现有 DSP 之后
++- 整数索引：精确插入位置（0=第一个 DSP，1=第二个…）

@@ -1,7 +1,7 @@
 ---
 title: "C# 多线程与并发编程 — 摘要"
 type: source-summary
-updated: 2026-05-10
+updated: 2026-06-02
 tags: [csharp, threading, task, async, concurrency, parallel]
 source: "raw/cs/languages/csharp-threading.md"
 ---
@@ -28,3 +28,4 @@ C# 并发模型演进全景：Thread → Task → async/await → Channel，涵�
 ## 关联页面
 
 - [[concepts/CSharp并发模型|C# 并发模型]] — 概念综合页
+- [[csharp-async-awaiter-摘要|C# 异步模型]] — TAP/async-await/Process 管理

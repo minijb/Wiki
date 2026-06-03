@@ -5,10 +5,8 @@ tags:
   - serialization
   - xml
   - file-io
-  - stream
-  - byte
-type: language
-created: 2026-06-02
+type: source
+updated: 2026-06-02
 source_files:
   - drafts/My_Vault/files/C sharp xml序列化_反序列化.md
   - drafts/My_Vault/files/C sharp xml.md
@@ -453,7 +451,53 @@ Console.WriteLine(uri.Query);     // "?query=value"
 
 ---
 
-## 7. 面试要点
+## 7. System.Text.Json — 现代 JSON 序列化
+
+自 .NET Core 3.0 起，`System.Text.Json` 是 XmlSerializer 的高性能现代替代：
+
+```csharp
+// 序列化
+var player = new PlayerData { Name = "Hero", Level = 42 };
+string json = JsonSerializer.Serialize(player);
+File.WriteAllText("player.json", json);
+
+// 反序列化
+string json = File.ReadAllText("player.json");
+PlayerData player = JsonSerializer.Deserialize<PlayerData>(json);
+
+// 带选项配置
+var options = new JsonSerializerOptions
+{
+    WriteIndented = true,
+    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+};
+string json = JsonSerializer.Serialize(player, options);
+```
+
+### 7.1 XmlSerializer vs System.Text.Json
+
+| 维度 | XmlSerializer | System.Text.Json |
+|------|--------------|------------------|
+| 速度 | 较慢（反射 + 动态 IL 生成） | 快 5-10x（源生成器） |
+| 分配 | 每次缓存序列化程序集 | 零分配选项（Utf8JsonWriter） |
+| 格式 | XML（冗长） | JSON（紧凑） |
+| 人类可读 | 中等 | 良好 |
+| 特性标记 | `[XmlElement]` `[XmlAttribute]` | `[JsonPropertyName]` `[JsonIgnore]` |
+| Dictionary 支持 | 需 IXmlSerializable | 原生支持 |
+| 源生成器（.NET 6+） | 不支持 | ✅ AOT 友好 |
+
+```csharp
+// System.Text.Json 源生成器（.NET 6+）— AOT 安全，零反射
+[JsonSerializable(typeof(PlayerData))]
+public partial class AppJsonContext : JsonSerializerContext { }
+
+string json = JsonSerializer.Serialize(player, AppJsonContext.Default.PlayerData);
+```
+
+---
+
+## 8. 面试要点
 
 1. **Stream 的 Position 陷阱**：多次使用前务必重置为 0，否则读/写位置错误
 2. **Flush 的作用**：强制将缓冲区数据写入底层设备

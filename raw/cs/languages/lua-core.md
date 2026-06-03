@@ -1,9 +1,10 @@
 ---
 title: "Lua 核心特性"
-source_type: language-reference
-tags: [lua, table, closure, metatable, coroutine, upvalue, gc]
-created: 2026-06-02
+type: source
 updated: 2026-06-02
+tags: [lua, table, closure, metatable, coroutine, upvalue, gc, value-passing]
+aliases: [Lua核心, Lua底层, Lua原理]
+description: Lua 语言核心机制完整参考：Table 双段结构（数组段/哈希段）与 Rehash 算法、闭包与 UpValue 共享模型、元表系统（__index/__newindex/运算符重载/OOP 模拟）、协程调度（resume/yield/参数双向传递）、值传递与引用传递（含深/浅拷贝）、增量式三色标记 GC、循环语法（数值 for/ipairs/pairs/next）
 ---
 
 # Lua 核心特性

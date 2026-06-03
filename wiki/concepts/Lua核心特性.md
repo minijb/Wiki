@@ -49,3 +49,4 @@ Lua GC 采用**增量式三色标记-清除**算法：白色（未标记）、�
 - [[sources/lua-core-摘要|Lua 核心特性来源摘要]]
 - [[concepts/XLua热补丁|XLua 热补丁]] — Unity 中的 Lua 热更新
 - [[entities/EmmyLua|EmmyLua]] — Lua 类型注解与 IDE 工具链
+- [[concepts/面试常见问题|面试常见问题 — Lua]] — Lua 技术面试 Q&A（table/元表/OOP/闭包/热更新/C# 互调性能）

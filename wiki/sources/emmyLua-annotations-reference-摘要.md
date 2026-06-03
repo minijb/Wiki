@@ -1,7 +1,7 @@
 ---
 title: "EmmyLua 注解完全参考"
 type: source-summary
-updated: 2026-05-07
+updated: 2026-06-02
 source: "raw/cs/languages/emmyLua-annotations-reference.md"
 tags: [lua, emmylua, annotations, type-system, luacats]
 ---

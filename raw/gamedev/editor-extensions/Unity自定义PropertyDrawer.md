@@ -128,3 +128,72 @@ public class Test : MonoBehaviour
 - [[concepts/Unity编辑器全局设置|编辑器全局设置]] — Editor 文件夹、MenuItem、Selection
 - [[concepts/Unity编辑器窗口|编辑器窗口]] — EditorWindow / ScriptableWizard
 - [[concepts/Unity Gizmos 调试|Gizmos 调试]] — Gizmos / DrawGizmo / Handles
+
+---
+
+## 实战：Autohook 自动绑定 PropertyDrawer
+
+Autohook 是一个实用的 PropertyDrawer 模式，通过命名约定自动绑定组件引用，消除手动拖拽：
+
+```csharp
+// 定义标记性 Attribute
+public class AutohookAttribute : PropertyAttribute { }
+
+// 定义 PropertyDrawer
+[CustomPropertyDrawer(typeof(AutohookAttribute))]
+public class AutohookPropertyDrawer : PropertyDrawer
+{
+#if UNITY_EDITOR
+    public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
+    {
+        // 自动查找并绑定组件
+        var component = FindAutohookTarget(property);
+        if (component != null)
+        {
+            property.objectReferenceValue = component;
+        }
+        EditorGUI.PropertyField(position, property, label);
+    }
+#endif
+    private Component FindAutohookTarget(SerializedProperty property)
+    {
+        var root = property.serializedObject;
+        if (root.targetObject is Component)
+        {
+            var type = GetTypeFromProperty(property);
+            var component = (Component)root.targetObject;
+            // 在子物体中查找名称匹配 "#字段名" 的 GameObject
+            var components = component.GetComponentsInChildren(type, true);
+            foreach (var item in components)
+            {
+                if (item.gameObject.name == "#" + property.name)
+                {
+                    return item.gameObject.GetComponent(type);
+                }
+            }
+        }
+        return null;
+    }
+    private static System.Type GetTypeFromProperty(SerializedProperty property)
+    {
+        var parentComponentType = property.serializedObject.targetObject.GetType();
+        var fieldInfo = parentComponentType.GetField(property.propertyPath);
+        return fieldInfo.FieldType;
+    }
+}
+
+// 使用
+public class PlayerUI : MonoBehaviour
+{
+    [Autohook] public Button btnStart;     // 自动绑定子物体 "#btnStart"
+    [Autohook] public Text txtScore;       // 自动绑定子物体 "#txtScore"
+}
+```
+
+> [!tip] Autohook 命名约定
+> 字段名 `btnStart` 自动查找子物体中名为 `#btnStart` 的 GameObject，并获取对应类型的 Component。`#` 前缀用于区分子物体和普通物体名。
+
+> [!warning] 使用限制
+> 1. 子物体名必须唯一（不能有重名的 `#btnStart`）
+> 2. 仅适用于 `Component` 类型字段
+> 3. `#if UNITY_EDITOR` 确保仅在编辑器中执行查找，运行时零开销

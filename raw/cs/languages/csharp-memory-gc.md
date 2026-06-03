@@ -6,9 +6,8 @@ tags:
   - memory
   - struct
   - boxing
-  - idisposable
-type: language
-created: 2026-06-02
+type: source
+updated: 2026-06-02
 source_files:
   - drafts/My_Vault/02_Knowledge/01_Language/Csharp/Csharp_Struct 如何减少装箱造成的GC.md
   - drafts/My_Vault/02_Knowledge/01_Language/注意/00_CSharp_匿名函数GC问题.md
@@ -68,6 +67,50 @@ void Example()
 // 查看当前 GC 代数
 Console.WriteLine(GC.MaxGeneration);  // 通常是 2
 Console.WriteLine(GC.GetGeneration(obj));  // obj 的代数
+```
+
+### 2.4 GC 模式：Workstation vs Server
+
+.NET GC 有两种主要模式，通过 `DOTNET_gcServer` 或 `.csproj` 配置：
+
+| 模式 | 特征 | 适用场景 |
+|------|------|----------|
+| **Workstation** (默认) | 单 GC 堆，低延迟优先，与用户代码并发 | 桌面应用、UI 程序 |
+| **Server** | 每 CPU 核心一个 GC 堆，高吞吐优先 | ASP.NET 服务端 |
+
+```xml
+<!-- .csproj -->
+<ServerGarbageCollection>true</ServerGarbageCollection>
+```
+
+### 2.5 Background GC 与 Latency 模式
+
+| 代 | 回收模式 |
+|----|----------|
+| Gen 0/1 | 始终阻塞（Stop-the-world），但极快 |
+| Gen 2 | **Background GC**（默认）：回收在后台线程进行，用户线程可继续分配 Gen 0 |
+
+延迟模式（`GCSettings.LatencyMode`）：
+
+| 模式 | 行为 | 使用场景 |
+|------|------|----------|
+| `Interactive` (默认) | 平衡吞吐与延迟 | 通用 |
+| `Batch` | 最大化吞吐，允许更长的 GC 暂停 | 批处理、无用户交互 |
+| `LowLatency` | Gen 2 回收受抑制，暂停更短 | 时间敏感操作（需手动退出） |
+| `SustainedLowLatency` | 长期低延迟，仅 foreground Gen 2 受抑制 | 长期运行的响应式服务 |
+
+```csharp
+// 时间敏感窗口：临时切换到低延迟
+var oldMode = GCSettings.LatencyMode;
+try
+{
+    GCSettings.LatencyMode = GCLatencyMode.LowLatency;
+    PerformTimeSensitiveWork();
+}
+finally
+{
+    GCSettings.LatencyMode = oldMode;
+}
 ```
 
 ---
@@ -222,25 +265,93 @@ public void Process(string name)
 
 ### 5.2 GC 问题场景
 
+**场景1：每次调用都创建闭包对象**
+
 ```csharp
-// 问题：每次调用都创建新的闭包对象
 public void LoadImage(string path)
 {
     // 闭包捕获了 charBustComponent 和 cachedTextures
     ImageManager.LoadImage(path, (resPath, resource) =>
     {
-        // 此闭包对象在堆上分配
+        // 此闭包对象在堆上分配 — 每次 LoadImage 调用一次
         charBustComponent.SwitchPart(resource.tex, partName);
         cachedTextures.Add(resPath, resource.tex);
     });
 }
 ```
 
+**场景2：异步回调 + 竞态 — 导致重复 Add 异常**
+
+```csharp
+// 原始 LoadImage 是异步方法
+// 如果同时有两个 LoadImage 调用同一个 texturePath：
+// 1. 第一个 LoadImage 异步加载中（缓存未命中）
+// 2. 第二个 LoadImage 也异步加载（同样缓存未命中）
+// 3. 两个回调都尝试 cachedTextures.Add(path, tex) → 重复 key 异常！
+
+// 解决方案一：加载列表 + 去重
+private readonly HashSet<string> _loadingPaths = new();
+private readonly Dictionary<string, Action<Texture>> _pendingCallbacks = new();
+
+public void LoadImageSafe(string path, Action<Texture> callback)
+{
+    if (cachedTextures.TryGetValue(path, out var tex))
+    {
+        callback(tex);  // 缓存命中，同步返回 — 无闭包分配
+        return;
+    }
+
+    lock (_loadingPaths)
+    {
+        if (_loadingPaths.Contains(path))
+        {
+            // 已有加载中，注册回调等待（而非重复发起加载）
+            _pendingCallbacks[path] += callback;
+            return;
+        }
+        _loadingPaths.Add(path);
+    }
+
+    ImageManager.LoadImage(path, (resPath, resource) =>
+    {
+        cachedTextures[resPath] = resource.tex;
+
+        lock (_loadingPaths)
+        {
+            _loadingPaths.Remove(resPath);
+            _pendingCallbacks.TryGetValue(resPath, out var cbs);
+            _pendingCallbacks.Remove(resPath);
+        }
+
+        callback(resource.tex);
+        cbs?.Invoke(resource.tex);
+    });
+}
+```
+
+**场景3：高频路径中的 Lambda**
+
+```csharp
+// ❌ Update 中创建闭包 — 每帧分配
+void Update()
+{
+    items.ForEach(item => Process(item));
+}
+
+// ✅ 改为普通 foreach — 零分配
+void Update()
+{
+    foreach (var item in items) Process(item);
+}
+```
+
 ### 5.3 优化策略
 
-- 高频调用的 Lambda → 改用实例方法或缓存委托
+- 高频调用的 Lambda → 改用实例方法、缓存委托或 `foreach`
 - 避免在 Update/FixedUpdate 中创建闭包
 - 用对象池或预分配回调替代动态 Lambda
+- 异步加载时用 **加载列表** 防止重复请求和竞态
+
 
 ---
 
@@ -405,9 +516,18 @@ using var b = new B();
 
 ## 9. 面试要点
 
-1. **GC 原理**：分代回收，Gen 0/1/2，标记-压缩-更新引用
-2. **装箱**：值类型 → object/interface，堆分配 + 复制；避免方法：重载、泛型、统一接口
-3. **struct vs class**：值类型无 GC 压力但复制有成本；引用类型灵活但 GC 需要跟踪每个实例
-4. **闭包GC**：Lambda 捕获外部变量 → 编译器生成匿名类（堆分配）→ 每次调用可能产生新对象
-5. **IDisposable vs Finalizer**：Dispose 用于及时释放；析构函数是 GC 回收的最后保障（只处理非托管资源）；`GC.SuppressFinalize` 防止重复清理
-6. **WeakReference**：允许 GC 回收，用于缓存等非强制性引用场景
+1. **GC 原理**：分代回收（Gen 0/1/2），标记-压缩-更新引用；Workstation vs Server 模式；Background GC
+2. **GC Latency 模式**：Interactive/Batch/LowLatency/SustainedLowLatency 及使用场景
+3. **装箱**：值类型 → object/interface，堆分配 + 复制；避免方法：重载、泛型、统一接口
+4. **struct vs class**：值类型无 GC 压力但复制有成本；引用类型灵活但 GC 需要跟踪每个实例
+5. **闭包GC**：Lambda 捕获外部变量 → 编译器生成匿名类（堆分配）→ 每次调用可能产生新对象；异步回调竞态导致重复 Add
+6. **IDisposable vs Finalizer**：Dispose 用于及时释放；析构函数是 GC 回收的最后保障（只处理非托管资源）；`GC.SuppressFinalize` 防止重复清理
+7. **WeakReference**：允许 GC 回收，用于缓存等非强制性引用场景
+8. **GC 优化时机**：在加载/转场时主动 GC（需谨慎），避免关键帧触发；预分配容量减少扩容 GC
+
+## 10. 交叉引用
+
+- [[csharp-async-awaiter-摘要|C# 异步模型]] — ValueTask 通过值类型减少异步方法的堆分配
+- [[csharp-collections-摘要|C# 集合框架]] — List 扩容导致的 GC 与 struct 优化实践
+- [[csharp-delegates-attributes-摘要|C# 委托特性]] — Lambda 闭包的 GC 影响与优化策略
+- [[Unity性能优化]] — Unity BoehmGC 与 .NET 分代 GC 的对比及优化策略

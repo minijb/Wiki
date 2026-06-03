@@ -58,6 +58,80 @@ public struct Velocity : IComponentData
 }
 ```
 
+### 完整的 Component 类型体系
+
+Unity Entities 1.0+ 提供了 9 种 Component 类型，覆盖从简单数据存储到高级分组、生命周期管理的全部需求：
+
+| Component 类型 | 接口/基类 | 用途 | 关键特性 |
+|:---------------|:----------|:-----|:---------|
+| **Unmanaged** | `IComponentData` | 最常见的数据组件 | struct，仅 Blittable 字段，最高性能 |
+| **Managed** | `class` + `IComponentData` | 存储引用类型字段 | class 类型，支持任意 C# 对象，性能较低 |
+| **Shared** | `ISharedComponentData` | 按值分组 Entity | 相同值的 Entity 归入同一 Chunk，减少内存浪费 |
+| **Cleanup** | `ICleanupComponentData` | 标记需清理的 Entity | 销毁 Entity 时保留，用于外部资源释放 |
+| **Tag** | `IComponentData`（无字段） | 零大小的标签组件 | 不占内存，仅用于 EntityQuery 过滤 |
+| **Buffer** | `IBufferElementData` | 动态数组 | 每个 Entity 可拥有变长数据，类似 `List<T>` |
+| **Chunk** | `IChunkComponent` | 整个 Chunk 共享的值 | 一个 Chunk 只有一份数据，减少冗余 |
+| **Enableable** | `IEnableableComponent` | 运行时启用/禁用 | 切换不触发结构变更，性能远优于 Add/Remove |
+| **Singleton** | `IComponentData`（单实例） | World 内唯一实例 | 通过 `SystemAPI.GetSingleton<T>()` 直接访问 |
+
+```csharp
+// Tag Component：零大小，仅用于查询过滤
+public struct PlayerTag : IComponentData { }
+
+// Buffer Component：动态数组
+public struct Waypoint : IBufferElementData
+{
+    public float3 Position;
+}
+
+// Enableable Component：运行时切换无结构变更
+public struct IsInvincible : IComponentData, IEnableableComponent
+{
+    // 通过 SetComponentEnabled<T>(entity, false) 禁用
+}
+
+// Singleton Component
+public struct GameSettings : IComponentData
+{
+    public float GameSpeed;
+    public int MaxPlayers;
+}
+// 访问：SystemAPI.GetSingleton<GameSettings>()
+```
+
+> [!important] Cleanup Component 的用途
+> 当 Entity 被销毁时，所有非 Cleanup 组件立即移除，但 Cleanup 组件保留。这使得 System 可以在下一帧检测到"需要清理的 Entity"并执行自定义清理逻辑（如释放 Native 资源、通知外部系统），之后手动移除 Cleanup 组件完成最终销毁。
+
+### System 类型与生命周期
+
+Unity ECS 提供 4 种 System 基类型，适应不同场景：
+
+| System 类型 | 基类/接口 | 运行方式 | 适用场景 |
+|:------------|:----------|:---------|:---------|
+| **ISystem** | `struct ISystem` | Burst 兼容的非托管 System | 高性能需求，推荐首选 |
+| **SystemBase** | `class SystemBase` | 托管 System | 需要访问托管数据或 GameObject |
+| **EntityCommandBufferSystem** | `class` 派生自 `SystemBase` | 提供 ECB 实例 | 延迟执行结构变更，合并多个 System 的 ECB |
+| **ComponentSystemGroup** | `class` | 组织 System 层级 | 控制 System 执行顺序和分组 |
+
+System 的生命周期方法：
+
+```csharp
+public partial struct MySystem : ISystem
+{
+    // 创建时调用一次 — 初始化数据、缓存查询
+    public void OnCreate(ref SystemState state) { }
+
+    // 销毁时调用一次 — 释放资源
+    public void OnDestroy(ref SystemState state) { }
+
+    // 每帧调用 — 主逻辑
+    public void OnUpdate(ref SystemState state) { }
+}
+```
+
+> [!tip] ISystem vs SystemBase
+> `ISystem`（struct）可以被 Burst 编译，性能优于 `SystemBase`（class）。DOTS 1.0+ 推荐 `ISystem` 作为默认选择，仅在需要访问 `GameObject`、`MonoBehaviour` 或 `Component` 引用时回退到 `SystemBase`。
+
 **System** 包含所有逻辑，负责查询拥有特定 Component 组合的 Entity，并对它们执行变换。System 不持有任何持久状态——它每帧（或按需）运行，读取 Component 数据，执行计算，写回结果。System 之间通过 `[UpdateBefore]`、`[UpdateAfter]`、`[UpdateInGroup]` 属性控制执行顺序。
 
 ```csharp
@@ -127,6 +201,68 @@ Entity 数量 = (16,384 - Header 大小) / (单个 Entity 所有 Component 大�
 
 这种设计的直接收益：**遍历 10,000 个 Entity 的 `Translation` 时，CPU 预取器可以线性预取相邻的 float3 数据，缓存未命中率极低。**在传统 GameObject 模式下，10,000 个 `Transform` 散布在堆内存各处，每次访问都是随机的指针跳转，缓存命中率可能低于 10%。
 
+### 结构变更与同步点
+
+在 ECS 中，以下操作会触发**结构变更（Structural Change）**，导致 Unity 重新组织 Chunk 内存：
+
+- 创建或销毁 Entity
+- 添加或移除 Component
+- 设置 Shared Component 的值
+
+结构变更的代价：Entity 数据必须在 Chunk 之间移动（memcpy），且可能触发**同步点（Sync Point）**——主线程等待所有已调度 Job 完成。同步点会暂时阻塞所有 Worker 线程，严重降低并行效率。
+
+> [!warning] 避免在 Job 中执行结构变更
+> Job 运行期间不能直接修改 Entity 结构。应在 Job 中收集变更请求，通过 `EntityCommandBuffer`（ECB）延迟到主线程执行。使用 `EntityCommandBufferSystem` 自动在帧末回放 ECB。
+
+```csharp
+// 正确：通过 ECB 延迟执行结构变更
+[BurstCompile]
+public partial struct SpawnSystem : ISystem
+{
+    public void OnUpdate(ref SystemState state)
+    {
+        var ecb = new EntityCommandBuffer(Allocator.TempJob);
+
+        // 在 Job 中记录变更请求
+        var job = new MyJob { ECB = ecb.AsParallelWriter() };
+        state.Dependency = job.Schedule(state.Dependency);
+        state.Dependency.Complete();
+
+        ecb.Playback(state.EntityManager);  // 主线程回放
+        ecb.Dispose();
+    }
+}
+```
+
+> [!note] Enableable Component 的优势
+> 启用/禁用 `IEnableableComponent` **不算**结构变更——不移动 Chunk，不触发同步点。对于频繁切换状态的场景（如 Buff 开关），Enableable 组件比 Add/Remove 组件性能优势巨大。
+
+### World 初始化与自定义引导
+
+默认情况下，Unity 自动创建 Default World 并加入所有 System。可通过 `ICustomBootstrap` 接口自定义引导流程：
+
+```csharp
+public class MyBootstrap : ICustomBootstrap
+{
+    public bool Initialize(string defaultWorldName)
+    {
+        // 手动创建 World 和 System
+        var world = new World("MyCustomWorld");
+        World.DefaultGameObjectInjectionWorld = world;
+
+        var systems = DefaultWorldInitialization.GetAllSystems(WorldSystemFilterFlags.Default);
+        DefaultWorldInitialization.AddSystemsToRoot(systems, world);
+        return true;
+    }
+}
+```
+
+通过 Scripting Define Symbols 控制引导行为：
+- `#UNITY_DISABLE_AUTOMATIC_SYSTEM_BOOTSTRAP`：禁用运行时和编辑器 World 的自动创建
+- `#UNITY_DISABLE_AUTOMATIC_SYSTEM_BOOTSTRAP_RUNTIME_WORLD`：仅禁用运行时 World
+- `#UNITY_DISABLE_AUTOMATIC_SYSTEM_BOOTSTRAP_EDITOR_WORLD`：仅禁用编辑器 World
+
+
 ---
 
 ## DOTS 技术栈
@@ -137,6 +273,99 @@ DOTS（Data-Oriented Technology Stack）是 Unity 面向高性能场景的完整
 |------|------|----------|
 | **Entities** | ECS 架构运行时 | 数据与行为分离，Chunk 连续内存，EntityQuery 快速筛选 |
 | **Job System** | 多线程任务调度 | 无锁作业调度，自动依赖追踪，最大化 CPU 利用率 |
+
+### 四种 Job 接口对比
+
+| 接口 | 执行模式 | 核心方法 | 适用场景 | 关键点 |
+|:-----|:---------|:---------|:---------|:-------|
+| `IJob` | 单任务 | `Execute()` | 独立任务，整体操作数据 | 最简单，一次执行 |
+| `IJobParallelFor` | 数据并行 | `Execute(int index)` | 处理大型数组，无数据依赖 | 最常用，需保证 `index` 之间无写入竞争 |
+| `IJobParallelForTransform` | 数据并行 | `Execute(int, TransformAccess)` | 并行更新大量 Transform | 需 `TransformAccessArray`，避免装箱 |
+| `IJobFor` | 串行循环 | `Execute(int index)` | 有数据依赖但需 Burst 优化的循环 | 非并行，`ScheduleParallel` 触发 Burst 优化 |
+
+**选择决策树**：
+- 只有一个独立任务 → `IJob`
+- 处理数万个独立数据元素 → `IJobParallelFor`
+- 处理数万个 `Transform` → `IJobParallelForTransform`（性能远超在 `IJobParallelFor` 中手动处理 `Transform`）
+- 循环有数据依赖但需要 Burst 极致优化 → `IJobFor` + `ScheduleParallel`
+
+**`IJobFor` 详解**：虽然 `Execute(int index)` 在单线程上按 0→count-1 顺序执行，但通过 `ScheduleParallel` 调度时，Burst 会将整个循环编译为高度优化的原生代码，性能可超过手写 `for` 循环：
+
+```csharp
+[BurstCompile]
+public struct CumulativeJob : IJobFor
+{
+    public NativeArray<float> Output;
+    public void Execute(int i)
+    {
+        if (i > 0)
+            Output[i] = Output[i - 1] + 1; // 依赖前一个元素，必须串行
+    }
+}
+// 调度：虽然串行执行，但 Burst 编译后性能远超普通 for
+JobHandle handle = job.ScheduleParallel(outputArray.Length, 64, default);
+```
+
+### 使用注意事项
+
+1. **Job 不应访问静态数据**：静态数据不受安全系统保护，多线程访问会导致竞态条件
+2. **`ScheduleBatchedJobs` 可立即执行**：已调度的 Job 会被缓存，调用此方法立即清空缓存队列。ECS 系统已隐式清空，通常无需手动调用
+3. **`ref returns` 限制**：无法直接修改 NativeContainer 中的 struct 内容，需通过临时变量：
+   ```csharp
+   MyStruct temp = myNativeArray[i];
+   temp.memberVariable = 0;
+   myNativeArray[i] = temp;
+   ```
+4. **`Schedule` 和 `Complete` 只能在主线程调用**
+5. **`[ReadOnly]` 标记只读数据**：声明只读访问可提升并行安全性，允许多个 Reader 同时访问
+6. **调试用 `Run` 替代 `Schedule`**：`Run` 在主线程同步执行，便于断点调试
+7. **不要在 Job 中分配托管内存**：分配托管内存极慢且无法被 Burst 编译
+8. **`[NativeSetThreadIndex]`**：获取当前执行的 Worker 线程索引
+9. **`[NativeDisableContainerSafetyRestriction]`**：跳过线程安全检查（仅用于确认安全的极端场景）
+10. **长 Job 拆分**：使用 `JobsUtility.JobWorkerCount` 获取 Worker 数量，将大任务拆分为与 Worker 数匹配的子任务，避免单 Worker 过载
+11. **`JobWorkerMaximumCount`**：设置最大 Job Worker 线程数
+
+### Blittable 类型层级
+
+理解 Blittable 约束的关键是理清三个概念的包含关系：
+
+```
+值类型 (Value Types) ⊃ 非托管类型 (Unmanaged Types) ⊃ Blittable 类型
+```
+
+- **值类型**：最广的范畴。`int`、`float`、`bool`、`struct`、`enum` 等。
+- **非托管类型**：值类型的子集。不含任何引用类型字段，所有字段递归为非托管类型。例如：`float3` 是非托管，但包含 `string` 字段的 struct 不是。
+- **Blittable 类型**：非托管类型的更严格子集。在托管和非托管内存中**二进制表示完全一致**。例如：`int` 是 Blittable，但 `bool`（C# 1 字节 vs 原生可能 4 字节）和 `char`（2 字节 Unicode vs 1 字节 ANSI）**不是** Blittable。
+
+> [!warning] 常见陷阱
+> - `bool` 在 C# 中占 1 字节，但在某些原生平台是 4 字节 → **不是 Blittable**，使用 `byte` 或 `int` 替代
+> - `Vector3` 是 `class`（引用类型） → 使用 `float3`（`Unity.Mathematics`）替代
+> - `Quaternion` → 使用 `quaternion`
+> - `string` → 使用 `FixedString32Bytes` / `FixedString64Bytes` 等 Burst 兼容的定长字符串
+
+### SoA 设计模式
+
+**Structure of Arrays（SoA）** 是面向数据设计的核心。对比两种内存布局：
+
+| 模式 | 内存布局 | 缓存效率 | DOTS 适用性 |
+|:-----|:---------|:---------|:------------|
+| AoS（Array of Structures） | `[{HP,Pos}, {HP,Pos}, ...]` | 低——不用的字段污染缓存行 | ❌ 传统 OOP 模式 |
+| SoA（Structure of Arrays） | `[HP₀,HP₁,...]` `[Pos₀,Pos₁,...]` | 高——遍历 HP 时缓存行 100% 命中 | ✅ ECS Chunk 就是 SoA |
+
+SoA 模式下的数据设计：
+
+```csharp
+// ❌ AoS — 缓存不友好
+public struct BadEntity { public int Health; public float3 Position; }
+public NativeArray<BadEntity> entities;
+
+// ✅ SoA — 并行数组，缓存友好
+public NativeArray<int> Healths;
+public NativeArray<float3> Positions;
+```
+
+ECS 的 Chunk 内存布局天然就是 SoA 变体——每个 Component 类型的数据在 Chunk 内以独立数组连续存储，System 只遍历它需要的 Component 数组，CPU 预取效率达到理论最优。
+
 | **Burst Compiler** | LLVM 编译器后端 | 将 C# 子集编译为高度优化的原生代码，SIMD 自动向量化 |
 | **Mathematics** | 数学库 | `float3`、`quaternion`、`float4x4` 等 SIMD 友好类型，替代 `Vector3`/`Quaternion` |
 

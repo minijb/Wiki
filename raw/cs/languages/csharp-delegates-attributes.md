@@ -5,8 +5,8 @@ tags:
   - delegate
   - event
   - attribute
-  - reflection
-type: language
+type: source
+updated: 2026-06-02
 created: 2026-06-02
 source_files:
   - drafts/My_Vault/files/C sharpe Event, Delegates, Action.md
@@ -90,6 +90,19 @@ interface IComparator { int Compare(object a, object b); }
 // 用委托定义策略（更简洁）
 Func<object, object, int> comparator;
 ```
+
+### 1.5 委托 vs 接口 — 性能对比
+
+| 调用方式 | 相对开销 | 说明 |
+|----------|---------|------|
+| 直接方法调用 | 1x (基线) | 编译器可内联 |
+| 接口虚调用 | ~1.1x | JIT 可去虚拟化 |
+| 委托调用 | ~1.2x | 间接调用，现代 JIT 可优化 |
+| 反射调用 | ~10-100x | 装箱 + 元数据查询 |
+
+关键结论：委托和接口的性能差异在现代 .NET 中已微乎其微。选择应基于设计意图而非性能：
+- **单函数契约** → 委托
+- **多方法行为契约** → 接口
 
 ---
 

@@ -2,7 +2,11 @@
 title: "依赖注入-摘要"
 source: "raw/cs/architecture/dependency-injection.md"
 type: source-summary
-created: 2026-06-02
+updated: 2026-06-02
+tags:
+  - csharp
+  - dependency-injection
+  - architecture
 ---
 
 # 依赖注入-摘要
@@ -11,7 +15,7 @@ created: 2026-06-02
 
 ## 核心内容
 
-从 RPG 游戏武器系统出发，循序渐进讲解依赖注入的动机、定义、三种注入方式（Setter/构造/依赖获取）、反射驱动的 DI 容器原理与简易实现、Transient/Singleton/Scoped 三种生命周期及陷阱、DI 与 SOLID 原则的关系、DI 与 Strategy/Factory 设计模式的关系、ASP.NET Core 和 Unity 的实际应用、常见面试题解答。
+从 RPG 游戏武器系统出发，循序渐进讲解依赖注入的动机、定义、三种注入方式（Setter/构造/依赖获取）、反射驱动的 DI 容器原理与简易实现、Transient/Singleton/Scoped 三种生命周期及陷阱、DI 与 SOLID 原则的关系、DI 与 Strategy/Factory 设计模式的关系、键控服务（Keyed Services, .NET 8+）、ASP.NET Core 和 Unity 的实际应用、常见面试题解答。
 
 ## 关键要点
 
@@ -20,9 +24,11 @@ created: 2026-06-02
 3. **Service Locator 是反模式**：隐藏依赖、运行时错误、难测试
 4. **反射驱动的容器**：通过类型名+反射实现配置化实例化，不改代码支持未来扩展
 5. **生命周期陷阱**：Singleton 中的 Transient 依赖被提升为事实 Singleton；不能将 Scoped 注入 Singleton
+6. **键控服务**（.NET 8+）：`[FromKeyedServices("name")]` 按名称解析同一接口的不同实现，适用多策略共存场景
 
 ## 相关页面
 
 - [[依赖注入]]
 - [[CSharp值类型性能]]
 - [[CSharp异步模型]]
+- [[设计模式-创建型]]

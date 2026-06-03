@@ -2,7 +2,12 @@
 title: "CSharp网络Socket-摘要"
 source: "raw/cs/languages/csharp-socket-network.md"
 type: source-summary
-created: 2026-06-02
+updated: 2026-06-02
+tags:
+  - csharp
+  - socket
+  - network
+  - tcp
 ---
 
 # CSharp网络Socket-摘要
@@ -25,4 +30,5 @@ created: 2026-06-02
 
 - [[CSharp网络Socket]]
 - [[CSharp异步模型]]
-- [[CSharp文件IO]]
+- [[CSharp序列化IO]]
+- [[Unity-Socket网络编程]]

@@ -12,7 +12,7 @@ source: "raw/tools/ci-cd/cmake-guide.md"
 
 ## 概述
 
-现代 CMake target-based 构建指南，从最小项目到完整模板，核心聚焦 PUBLIC/PRIVATE/INTERFACE 可见性规则、变量与缓存系统、生成器表达式、configure_file 配置头文件生成、以及 vcpkg 包管理集成。
+现代 CMake target-based 构建指南，从最小项目到完整模板，核心聚焦 PUBLIC/PRIVATE/INTERFACE 可见性规则、变量与缓存系统、生成器表达式、configure_file 配置头文件生成、文件操作（GLOB/COPY）、list 列表操作以及 vcpkg 包管理集成。
 
 ## 要点
 
@@ -24,6 +24,7 @@ source: "raw/tools/ci-cd/cmake-guide.md"
 - **configure_file**：模板文件中的 `@VAR@` 和 `#cmakedefine` 在配置阶段被替换，生成带版本号和条件编译开关的头文件
 - **生成器表达式**：`$<condition:value>` 在 Build 阶段求值，可按编译器类型设置不同编译选项
 - **vcpkg 集成**：通过 `CMAKE_TOOLCHAIN_FILE` 指定 vcpkg.cmake，安装的包可通过 `find_package` 直接使用
+- **list 操作**：LENGTH/GET/JOIN/SUBLIST（读取）、FIND（查找）、APPEND/PREPEND/INSERT/REMOVE_ITEM/REMOVE_AT/REMOVE_DUPLICATES/REVERSE/SORT（修改）、FILTER（正则过滤）
 
 ## 关联页面
 

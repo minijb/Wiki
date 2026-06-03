@@ -1,24 +1,134 @@
 ---
-title: Python 数据处理与杂项
+title: "Python 数据处理与杂项"
+type: source
 updated: 2026-06-02
-tags:
-  - python
-  - mysql
-  - javascript
-  - opencv
-  - matplotlib
-type: language
-description: Python 性能检测、图像处理（PIL/OpenCV/Matplotlib）、MySQL 基础操作、JavaScript 基础语法等杂项知识汇总
+tags: [python, file-io, subprocess, mysql, javascript, opencv, matplotlib, profiling]
+aliases: [Python文件操作, Python子进程, Python工具]
+description: Python 文件操作（shutil/os/pathlib）、子进程管理（subprocess.run/Popen）、性能检测、图像处理（PIL/OpenCV/Matplotlib）、MySQL 基础操作、JavaScript 基础语法
 ---
 
 # Python 数据处理与杂项
 
-> [!note] 已有专题页面
-> Python 的文件 I/O 和子进程管理已有独立页面：
-> - [[concepts/Python文件IO模型|Python 文件 I/O 模型]] — pathlib / shutil / os 分层架构、原子写入、路径安全
-> - [[concepts/Python子进程管理|Python 子进程管理]] — subprocess.run() / Popen() 接口分层、命令注入防护、管道死锁
->
-> 以下内容为上述专题之外的数据处理与工具类知识点。
+## Python 文件操作
+
+Python 主要使用两个标准库进行文件操作：`shutil` 和 `os`。现代 Python（3.4+）推荐同时使用 `pathlib` 进行路径管理。
+
+### 复制
+
+```python
+import shutil
+
+shutil.copy(src, dest)        # 复制文件
+shutil.copytree(src, dest)    # 复制文件夹（递归）
+```
+
+### 移动
+
+```python
+shutil.move(src, dest)
+```
+
+### 删除
+
+```python
+import os
+
+os.unlink(path)     # 删除文件
+os.rmdir(path)      # 删除空目录
+shutil.rmtree(path) # 删除目录树（递归，非空目录）
+```
+
+### 创建文件夹
+
+```python
+import os
+
+os.makedirs(path, exist_ok=True)  # exist_ok=True 表示已存在时不抛异常
+```
+
+> [!tip] 路径管理推荐 pathlib
+> Python 3.4+ 的 `pathlib.Path` 提供面向对象的路径操作，可替代大部分 `os.path` 调用。参见 [[concepts/Python文件IO模型|Python 文件 I/O 模型]] 了解完整的 pathlib / os / shutil 分层架构。
+
+---
+
+## Python 子进程管理
+
+`subprocess` 模块允许生成新进程、连接到其输入/输出/错误管道，并获取返回码。
+
+### 接口分层
+
+| 函数/类 | 用途 |
+|----------|------|
+| `subprocess.run()` | 运行命令，等待完成，返回 `CompletedProcess` 实例 |
+| `subprocess.Popen()` | 类，灵活执行命令在新进程中（更底层） |
+
+### subprocess.run 详解
+
+```python
+subprocess.run(
+    args,                    # 参数列表: ["ls", "-al"]
+    *,                       # 后续均为关键字参数
+    stdin=None,              # 标准输入
+    input=None,              # 作为 stdin 传入的字符串
+    stdout=None,             # 标准输出: subprocess.PIPE / DEVNULL / 文件描述符
+    stderr=None,             # 标准错误
+    capture_output=False,    # 同时捕获 stdout + stderr
+    shell=False,             # 是否通过系统 shell 执行
+    cwd=None,                # 工作目录
+    timeout=None,            # 超时时间（秒）
+    check=False,             # 返回码非 0 时抛出 CalledProcessError
+    encoding=None,           # 文本模式编码
+    errors=None,             # 编码错误处理
+    text=None,               # 以文本模式处理 stdin/stdout/stderr
+    env=None,                # 环境变量
+)
+```
+
+### 实战示例：SVN 命令封装
+```python
+def run_svn_command(self, cmd: List[str]) -> str:
+    """执行SVN命令并返回输出"""
+    try:
+        full_cmd = ["svn"] + cmd
+        result = subprocess.run(
+            full_cmd,
+            cwd=self.repo_path,
+            capture_output=True,
+            text=True,
+            encoding='utf-8',
+            errors='ignore'
+        )
+        if result.returncode != 0:
+            print(f"SVN命令执行失败: {' '.join(full_cmd)}")
+            print(f"错误信息: {result.stderr}")
+            sys.exit(1)
+        return result.stdout
+    except FileNotFoundError:
+        print("错误：未找到svn命令，请确保SVN客户端已安装并添加到系统PATH")
+        sys.exit(1)
+    except Exception as e:
+        print(f"执行命令时出错: {e}")
+        sys.exit(1)
+```
+
+> [!warning] shell=True 安全风险
+> `shell=True` 会将命令字符串传递给系统 shell 解析，存在**命令注入风险**。除非必须使用 shell 特性（通配符、管道），否则始终传递列表形式的 args。
+
+### Popen — 底层控制
+当需要实时读取输出、双向通信或非阻塞操作时，使用 `Popen`：
+
+```python
+process = subprocess.Popen(
+    ["some_command"],
+    stdout=subprocess.PIPE,
+    stderr=subprocess.PIPE,
+    text=True
+)
+stdout, stderr = process.communicate(timeout=30)
+```
+
+> [!note] 管道死锁
+> 当 stdout/stderr 同时使用 PIPE 且输出量超出管道缓冲区时，`communicate()` 是最安全的方式——它在内部并发读取两个管道。手动先后读取可能导致死锁。
 
 ---
 

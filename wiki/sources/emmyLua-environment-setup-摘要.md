@@ -1,7 +1,7 @@
 ---
 title: "EmmyLua 环境安装与配置"
 type: source-summary
-updated: 2026-05-07
+updated: 2026-06-02
 source: "raw/cs/languages/emmyLua-environment-setup.md"
 tags: [lua, emmylua, luals, ide, rider, vscode, debug]
 ---
