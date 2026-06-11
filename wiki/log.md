@@ -1,13 +1,22 @@
 ---
 title: "Wiki 日志"
 type: log
-updated: 2026-06-02
+updated: 2026-06-11
 ---
 
 # Wiki 日志
 
 按时间倒序记录所有 Wiki 操作。只追加，不修改历史。
 
+
+## [2026-06-11] refine+ingest | Spine Delegates + Spine 资源卸载 — 创建 4 个页面，更新 1 个页面
+- refine: 创建 drafts/Spine-Delegates解析.md — 官方文档交叉验证，四组 delegate 全解析（更新/渲染/状态事件/轨道事件）
+- refine: 归档 drafts/Spine资源卸载指南.md — 清理三步法 + ResourceManager 交互 + Lua 协调
+- raw 归档: 2 个文件至 `raw/gamedev/animation/`（spine-delegates.md, spine-resource-unload.md）
+- wiki 新建 2 来源摘要: [[sources/spine-delegates-摘要]], [[sources/spine-resource-unload-摘要]]
+- wiki 新建 2 概念页: [[concepts/Spine-Delegates]], [[concepts/Spine资源管理]]
+- wiki 更新: [[concepts/Unity动画与Spine]] — 添加 delegate 和资源管理 wikilink
+- 更新 index.md（4 条目）
 
 ## [2026-06-02] refine-v2 | Draft Refine v2 — 深度重处理 My_Vault 笔记，6 领域并行
 - 策略：保留优先 + 网络搜索验证扩展。跳过逐条讨论，subagent 自主判断

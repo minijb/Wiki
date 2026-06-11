@@ -73,6 +73,8 @@ updated: 2026-06-03
 - [[concepts/Unity DOTS 与 ECS|Unity DOTS 与 ECS]] — ECS 架构、JobSystem、Burst 编译器
 - [[concepts/Unity FMOD 与 LipSync|Unity FMOD 与 LipSync]] — FMOD Studio 集成、共振峰口型同步
 - [[concepts/Unity动画与Spine|Unity 动画与 Spine]] — Animator 系统、Spine 2D 动画组件、动画系统演进
+- [[concepts/Spine-Delegates|Spine Delegates]] — delegate/event 系统深度解析：四组回调、帧时序、SkeletonGraphic 差异
+- [[concepts/Spine资源管理|Spine 资源管理]] — 引用链分析、清理三步法、ResourceManager 交互、Lua 协调
 - [[concepts/Unity编辑器特性速查|Unity 编辑器特性]] — 内置 Attribute 速查表，属性/方法/类三分类
 - [[concepts/Unity自定义PropertyDrawer|Unity 自定义 PropertyDrawer]] — PropertyAttribute + PropertyDrawer 三步实现
 - [[concepts/Unity自定义Inspector|Unity 自定义 Inspector]] — CustomEditor、SerializedProperty、布局与数组处理
@@ -170,6 +172,8 @@ updated: 2026-06-03
 - [[sources/游戏帧同步-摘要|游戏帧同步]]
 - [[sources/Unity脚本架构-摘要|Unity 脚本架构]]
 - [[sources/Unity-DOTS-ECS-摘要|Unity DOTS 与 ECS]]
+- [[sources/spine-delegates-摘要|Spine Delegates]] — delegate/event 系统四组回调、帧时序、陷阱与模式
+- [[sources/spine-resource-unload-摘要|Spine 资源卸载]] — 引用链分析、清理三步法、ResourceManager/Lua 交互
 - [[sources/Unity-FMOD-LipSync-摘要|Unity FMOD 与 LipSync]]
 - [[sources/Unity动画与Spine-摘要|Unity 动画与 Spine]]
 - [[sources/Unity常用API速查表-摘要|Unity 常用 API 速查]]

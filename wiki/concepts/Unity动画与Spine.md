@@ -76,7 +76,7 @@ Skeleton 是 Spine 的数据载体，存储骨骼层级、Slot、Attachment 和 
 
 ### SkeletonAnimation 生命周期
 
-四个更新回调阶段：
+四个更新回调阶段（详见 `[[Spine Delegates]]`）：
 
 | 回调 | 时机 | 用途 |
 |:-----|:-----|:-----|
@@ -85,7 +85,8 @@ Skeleton 是 Spine 的数据载体，存储骨骼层级、Slot、Attachment 和 
 | UpdateComplete | 所有骨骼世界值计算后 | 只读世界值 |
 | UpdateWorld | 世界值计算后 | 根据世界值修改局部值（自定义约束） |
 
-`Update(deltaTime)` 完整推进动画，`Update(0)` 不推进时间仅刷新姿态。`[DefaultExecutionOrder(-1)]` 可在 SkeletonAnimation 之前执行自定义脚本。
+`Update(deltaTime)` 完整推进动画，`Update(0)` 不推进时间仅刷新姿态。`[DefaultExecutionOrder(-1)]` 可在 SkeletonAnimation 之前执行自定义脚本。`SkeletonGraphic` 不暴露这四个回调。
+
 
 ### AnimationState 控制
 
@@ -125,3 +126,5 @@ anim.AnimationState.ClearTracks();
 ## 参见
 
 - [[sources/Unity动画与Spine-摘要|来源摘要]]
+- [[Spine Delegates]] — delegate/event 系统深度解析
+- [[Spine资源管理]] — 资源卸载与 Dispose 流程
