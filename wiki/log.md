@@ -1,13 +1,20 @@
 ---
 title: "Wiki 日志"
 type: log
-updated: 2026-06-11
+updated: 2026-06-17
 ---
 
 # Wiki 日志
 
 按时间倒序记录所有 Wiki 操作。只追加，不修改历史。
 
+
+## [2026-06-17] ingest | Spine 立绘纹理泄漏案例（paintinganim_gongsunyue）— 创建 3 个页面，更新 1 个页面
+- refine: 优化 drafts/MemoryLeak_Report_gongsunyue_v2.md → 归档 `raw/gamedev/animation/spine-texture-leak-gongsunyue.md`（精简 v2/v3 元讨论，保留根因分析与修复代码）
+- wiki 新建来源摘要: [[sources/spine-texture-leak-gongsunyue-摘要]]
+- wiki 新建概念页: [[concepts/内存泄漏调试方法论]] — 引用链反推根因、Unity 泄漏三层模型、xLua 桥钉住、根因 vs 次要因素辨析
+- wiki 更新: [[concepts/Spine资源管理]] — 新增"为什么必须主动释放（实战印证）"节
+- 更新 index.md（2 条目）
 
 ## [2026-06-11] refine+ingest | Spine Delegates + Spine 资源卸载 — 创建 4 个页面，更新 1 个页面
 - refine: 创建 drafts/Spine-Delegates解析.md — 官方文档交叉验证，四组 delegate 全解析（更新/渲染/状态事件/轨道事件）

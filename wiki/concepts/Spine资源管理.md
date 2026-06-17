@@ -115,6 +115,22 @@ GameObject 销毁前必须取消 `OnMeshAndMaterialsUpdated` 委托订阅，否�
 | 面板销毁（Destroy → OnDestroy → Dispose） | 自动触发完整清理 |
 | 面板缓存（仅 Hide） | **需主动调 Dispose()**，下次打开重新 Initialize |
 
+## 为什么必须主动释放（实战印证）
+
+清理三步法不是"可选优化"，而是**避免泄漏的必要操作**——以下机制决定了 GC 不可靠，必须在 `OnDestroy`/`Dispose` 主动断开所有资源引用。
+
+### GameObject 销毁 ≠ 托管对象释放
+
+`Destroy(go)` 只销毁原生对象，C# 托管包装（`SpineUIController`、`SkeletonGraphic`）变 fake null 但仍存活，字段引用依旧有效。只要 .NET GC 没跑，被引用的资源就不会被回收。因此释放点必须落在必然执行的 `OnDestroy`/`Dispose`。
+
+### xLua ObjectTranslator 钉住
+
+被 Lua 访问过的 C# 对象被 xLua 桥以强引用钉住，短期不可被 GC 回收。但这只是**次要因素**——只要释放点断开了资源引用（置空 `skeletonGraphic`、清 CanvasRenderer 槽、卸载 SkeletonData），被钉住的小对象即便存活也碰不到纹理。
+
+### 真实案例
+
+[[sources/spine-texture-leak-gongsunyue-摘要|paintinganim_gongsunyue 泄漏案例]]中，旧版 `OnDestroy` 漏清 CanvasRenderer 槽 + 未 `UnloadAsync` + 未置空 `skeletonGraphic`，导致 16 MB 纹理在 GO 销毁后仍驻留。补全三步即消除。完整的根因定位与辨析方法见 [[concepts/内存泄漏调试方法论|内存泄漏调试方法论]]。
+
 ## 参见
 
 - [[sources/spine-resource-unload-摘要|来源摘要]]
